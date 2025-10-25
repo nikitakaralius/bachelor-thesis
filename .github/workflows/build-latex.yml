@@ -1,0 +1,39 @@
+name: Build and Publish LaTeX Document
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-latex:
+    runs-on: ubuntu-latest
+    container: cristiangreco/pdflatex
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build LaTeX document
+        continue-on-error: true
+        run: |
+          pdflatex -interaction=nonstopmode thesis.tex
+          # Run twice to resolve references
+          pdflatex -interaction=nonstopmode thesis.tex
+
+      - name: Check if PDF was created
+        run: |
+          if [ ! -f "thesis.pdf" ]; then
+            echo "PDF file was not created!"
+            exit 1
+          fi
+          ls -la thesis.pdf
+
+      - name: Upload PDF as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: latex-document
+          path: thesis.pdf
+          retention-days: 30
