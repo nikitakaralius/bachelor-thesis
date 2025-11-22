@@ -1,0 +1,101 @@
+% Максимально по верхам. Просто написал что вот надо и что вот такие штуки есть чтобы эти проблемы решать.
+% Но воду льет хорошо, можно в введении опираться на текст.
+% Отметил про ротацию ключей, но не более. Все-таки важная тема, не стоит про нее забывать.
+% Ссылается на Zimina2023, много ссылок на habr.
+@Article{Glumov2024,
+    author  = {Glumov, Konstantin S.},
+    title   = {Безопасность микросервисов: управление секретами и безопасная аутентификация},
+    journal = {Актуальные исследования},
+    year    = {2024},
+    number  = {45 (227)},
+    pages   = {23--29},
+    doi     = {10.5281/zenodo.14029864},
+}
+
+% Приходит к использованию mTLS.
+% Хорошо изложено про основы микросервисной архитектуры, в моем дипломе может быть полезно описать это тоже.
+% Много про способы коммуникации микросервисов и их форматы. Как будто лишнее, но если надо налить воды, то полезно.
+% С асинхронным взаимодействием вообще дрянь, код какой-то пошел ненужный, модель publisher-subsriber как-то вяло объяснена, сразу к коду.
+% Хороший пункт про доверенные сети.
+% В mTLS интересный пункт, что async взаимодействие через Microservice D. Звучит сомнительно, но окэй.
+% Много Ошибка! Источник ссылки не найден
+% Есть поинт, если сервис с ПД, то лучше всего mTLS. А почему так особо не пояснили.
+% Есть упоминание, что закрытый ключ должен храниться где-то в секрете.
+% Есть про Certification Authoriry Server.
+% Фикс на сложности реализации mTLS. Про Service Mesh упоминаний нет. mTLS здесь как бы в ваккууме.
+@Article{Zimina2023,
+    author  = {Zimina, K. I. and Laponina, O. R.},
+    title   = {Механизмы межсервисной аутентификации в приложениях с микросервисной архитектурой},
+    journal = {International Journal of Open Information Technologies},
+    volume  = {11},
+    number  = {5},
+    pages   = {146--154},
+    year    = {2023},
+    url     = {https://cyberleninka.ru/article/n/mehanizmy-mezhservisnoy-autentifikatsii-v-prilozheniyah-s-mikroservisnoy-arhitekturoy},
+    urldate = {2025-10-25}
+}
+
+% По сути просто статка механизмов безопасности. oauth 2.0, jwt, sso на первом месте. Есть TLS, но mTLS вообще нет.
+% Логично, что очень много ссылок здесь.
+@Article{Almeida2022,
+    author  = {de Almeida, Murilo G. and Canedo, Edna D.},
+    title   = {Authentication and Authorization in Microservices Architecture: A Systematic Literature Review},
+    journal = {Applied Sciences},
+    volume  = {12},
+    number  = {6},
+    pages   = {3023},
+    year    = {2022},
+    doi     = {10.3390/app12063023}
+}
+
+% Знакомое вступление, но теперь средство решение не M2M auth, а SIEM.
+% Делали анализ академических источников, стандартов, документации, конференций
+% ... не закончил
+@Article{Barabanov2021,
+    author  = {Barabanov, Alexander I. and Makrushin, Denis},
+    title   = {Security Audit Logging in Microservice-Based Systems: Survey of Architecture Patterns},
+    journal = {Вопросы кибербезопасности},
+    year    = {2021},
+    number  = {2},
+    pages   = {71--80},
+    doi     = {10.21681/2311-3456-2021-2-71-80}
+}
+
+@Article{Sikha2025,
+    author  = {Sikha, Gopinath and Dorai, Venkateshwaran},
+    title   = {End-to-End Security and Operations for Kubernetes-Based Microservices},
+    journal = {International Research Journal of Modernization in Engineering Technology and Science},
+    volume  = {7},
+    number  = {8},
+    pages   = {2582--5208},
+    year    = {2025},
+    doi     = {10.56726/IRJMETS82304}
+}
+
+@Article{DiPilla2023,
+    author  = {Di Pilla, Piergiuseppe and Pareschi, Remo and Salzano, Francesco and Zappone, Federico},
+    title   = {Listening to what the system tells us: Innovative auditing for distributed systems},
+    journal = {Frontiers in Computer Science},
+    volume  = {4},
+    pages   = {1020946},
+    year    = {2023},
+    doi     = {10.3389/fcomp.2022.1020946}
+}
+
+@Online{PlatformV2025,
+    title   = {Как мы строили безопасную микросервисную архитектуру с Service Mesh: взгляд изнутри},
+    author  = {PlatformV Sber Blog},
+    url     = {https://platformv.sbertech.ru/blog/kak-my-stroili-bezopasnuyu-mikroservisnuyu-arhitekturu-s-service-mesh-vzglyad-iznutri},
+    urldate = {2025-10-25}
+}
+
+@Article{Stojanov2024,
+    author  = {Stojanov, Zeljko and Hristoski, Ilija and Stojanov, Jelena and Stojkov, Aleksandra},
+    title   = {Research Trends and Recommendations for Future Microservices Research},
+    journal = {Trudy ISP RAN/Proc. ISP RAS},
+    volume  = {36},
+    number  = {1},
+    pages   = {105--130},
+    year    = {2024},
+    doi     = {10.15514/ISPRAS-2024-36(1)-7},
+}
