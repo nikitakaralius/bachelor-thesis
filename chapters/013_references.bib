@@ -74,6 +74,16 @@
     doi     = {10.21681/2311-3456-2021-2-71-80}
 }
 
+% Ссылки плохие – тольк на документацию инструментов и известные манифесты.
+% Практики имплементации с использованием Helm, Prometheus, Grafana, Fluent Bit, and Spinnaker.
+% Рекомендуют zero trust architecture, mTLS for s2s encryption, IdP, secure vaults for secrets.
+% Хороший замечание, что сначала безопаность систем (etcd, k8s API, ноды) кластера – потом все остальное.
+% Политики для inter-pod коммуникации.
+% Секреты, хранимые внутри k8s должны быть зашифрованы.
+% Упоминание Istio для s2s mTLS.
+% Уделено внимание защите CI/CD.
+% Есть пример конечного сервиса.
+% Статья поверхностно обозревает технологияи, которые нужны для обеспечения безопасности в  k8s кластере.
 @Article{Sikha2025,
     author  = {Sikha, Gopinath and Dorai, Venkateshwaran},
     title   = {End-to-End Security and Operations for Kubernetes-Based Microservices},
