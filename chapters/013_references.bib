@@ -150,6 +150,7 @@
 }
 }
 
+%
 @article{Sousa2025,
     author = {Sousa, A. and Branco, F. and Reis, A. and Reis, M. J. C. S.},
     title = {A Container-Native IAM Framework for Secure Green Mobility: A Case Study with Keycloak and Kubernetes},
@@ -161,13 +162,7 @@
     doi = {10.3390/info16090802},
 }
 
-@article{Franzil2025,
-    author = {Franzil, M. and Bobis, T.},
-    title = {Sharpening Kubernetes Audit Logs with Context Awareness (K8NTEXT)},
-    journal = {arXiv preprint},
-    year = {2025},
-}
-
+%
 @article{Matias2023,
     author = {Ferreira, D. M. and Matias, M. J.},
     title = {Enhancing Effectiveness and Security in Microservices Architecture},
@@ -175,15 +170,19 @@
     year = {2023},
     volume = {239},
     pages = {2260--2269},
+    doi = {10.1016/j.procs.2024.06.417},
 }
 
+%
 @techreport{Madupati2023,
     author = {Madupati, B.},
     title = {Observability in Microservices Architectures: Leveraging Logging, Metrics, and Distributed Tracing in Large-Scale Systems},
     institution = {SSRN (Elsevier)},
     year = {2023},
+    doi = {10.5281/zenodo.13951033},
 }
 
+%
 @article{Belovodov2023,
     author = {Беловодов, А. В. and Лапонина, О. Р.},
     title = {Использование управления доступом на основе атрибутов в протоколе OAuth 2.0},
@@ -193,6 +192,7 @@
     pages = {204--214},
 }
 
+%
 @inproceedings{Amir2021,
     author = {Amir-Mohammadian, S. and Zowj, A. Y.},
     title = {Towards Concurrent Audit Logging in Microservices},
@@ -200,4 +200,30 @@
     year = {2021},
     pages = {1357--1361},
     doi = {10.1109/COMPSAC51774.2021.00191},
+}
+
+% Руководство NIST по архитектуре Zero Trust в микросервисах
+% Полезно для формализации принципов AAA и сетевой изоляции.
+% Хорошо подходит для теоретической части и описания требований безопасности.
+@TechReport{NIST2023,
+    author      = {O'Reilly, K.},
+    title       = {Implementing Zero Trust Architecture for Microservices},
+    institution = {National Institute of Standards and Technology (NIST)},
+    year        = {2023},
+    number      = {SP 1800-15},
+    url         = {https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.1800-35.pdf},
+}
+
+% Статья про паттерны и проблемы Kubernetes RBAC.
+% Полезна для части про авторизацию сервисов, роли и ошибки конфигурации.
+% Человеческое замечание: хороший обзор ограничений встроенного RBAC.
+@Article{Arun2025,
+    author  = {Arun Kumar Akuthota},
+    title   = {Role-Based Access Control (RBAC) in Modern Cloud Security Governance: An In-depth Analysis},
+    journal = {International Journal of Scientific Research in Computer Science, Engineering and Information Technology},
+    year    = {2025},
+    volume  = {11},
+    number  = {2},
+    pages   = {3297--3311},
+    doi     = {10.32628/CSEIT25112793},
 }
