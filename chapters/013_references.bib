@@ -18,7 +18,7 @@
 % С асинхронным взаимодействием вообще дрянь, код какой-то пошел ненужный, модель publisher-subsriber как-то вяло объяснена, сразу к коду.
 % Хороший пункт про доверенные сети.
 % В mTLS интересный пункт, что async взаимодействие через Microservice D. Звучит сомнительно, но окэй.
-% Много Ошибка! Источник ссылки не найден
+% Много Ошибок! Источник ссылки не найден
 % Есть поинт, если сервис с ПД, то лучше всего mTLS. А почему так особо не пояснили.
 % Есть упоминание, что закрытый ключ должен храниться где-то в секрете.
 % Есть про Certification Authoriry Server.
@@ -48,9 +48,22 @@
     doi     = {10.3390/app12063023}
 }
 
-% Знакомое вступление, но теперь средство решение не M2M auth, а SIEM.
-% Делали анализ академических источников, стандартов, документации, конференций
-% ... не закончил
+% Знакомое вступление, но теперь средство решение не M2M auth, а про логирование.
+% Делали анализ академических источников, стандартов, документации, конференций.
+% Затрагивают 3 основные темы: Threat modeling, Security Design, Implementation.
+% Статья содержит набор статей по безопасности микросервисных архитектур.
+% Много пишут про методы исследования, может быть полезно.
+% Нашли 8 угроз для модели, когда приложение напрямую отправляет логи в сервис логирования (в основном, связанные с сетью).
+% Крупные игроки используют паттерн с агентом-сборщиком логов из файла (МКСы пишут в этот файл), публикующим логи в message broker в HA кластере. Брокер доставляет логи в сервис логов.
+% Агент деплоится демоном или в k8s сайдкаром.
+% Крутая таблица №3 c определением категорий событий, которые надо логировать.
+% Рекомендация по использованию структурированных логов.
+% Крутой поинт, что за логирование и его инструментарий должна отвечать инфраструктурная команда.
+% It is preferable to ask development teams to use standard output to write log messages.
+% МКС и агент должны использовать mTLS, чтобы устранить все сетевые уязвимости
+% Фильриация и санитизация логов – отвественность агента
+% CorrellationID и хелсчеки агента как лучшие практики.
+% Указаны категории контекстов для включения в логи.
 @Article{Barabanov2021,
     author  = {Barabanov, Alexander I. and Makrushin, Denis},
     title   = {Security Audit Logging in Microservice-Based Systems: Survey of Architecture Patterns},
@@ -61,6 +74,16 @@
     doi     = {10.21681/2311-3456-2021-2-71-80}
 }
 
+% Ссылки плохие – тольк на документацию инструментов и известные манифесты.
+% Практики имплементации с использованием Helm, Prometheus, Grafana, Fluent Bit, and Spinnaker.
+% Рекомендуют zero trust architecture, mTLS for s2s encryption, IdP, secure vaults for secrets.
+% Хороший замечание, что сначала безопаность систем (etcd, k8s API, ноды) кластера – потом все остальное.
+% Политики для inter-pod коммуникации.
+% Секреты, хранимые внутри k8s должны быть зашифрованы.
+% Упоминание Istio для s2s mTLS.
+% Уделено внимание защите CI/CD.
+% Есть пример конечного сервиса.
+% Статья поверхностно обозревает технологияи, которые нужны для обеспечения безопасности в  k8s кластере.
 @Article{Sikha2025,
     author  = {Sikha, Gopinath and Dorai, Venkateshwaran},
     title   = {End-to-End Security and Operations for Kubernetes-Based Microservices},
@@ -72,6 +95,19 @@
     doi     = {10.56726/IRJMETS82304}
 }
 
+% Во встпуплении упоминается AI для организации безопасности и анализа входящих сигналов.
+% Статья про автоматизированный анализ логов на основе ELK.
+% Разрабатывают инструмент анализа логов блокчейн систем. То есть распределенный здесь не кластер, а сама система.
+% Хотят использовать NLP для поиска по логам.
+% Обработка логов моделями происходит в реальном времени.
+% Система умеет работать с неструктурированными логами.
+% Система предоставляет сервис мониторинга для обнаружения аномалий.
+% В системе одновременно используются модели для непересекающихся задач.
+% Модели системы учатся понимать слова предметной области, которые другие классификаторы могли бы пропустить.
+% Зачем-то есть анализ тональности логов (позитивный, негативный, нейтрайльный).
+% Дают пояснение, что это хороший индикатор происходящего в системе.
+% На синтетических тестах показали, что могут автоматически обнаружить DDoS атаки.
+% Много ссылок на похожие решения, так что разработанное решение интересно, но не уникально.
 @Article{DiPilla2023,
     author  = {Di Pilla, Piergiuseppe and Pareschi, Remo and Salzano, Francesco and Zappone, Federico},
     title   = {Listening to what the system tells us: Innovative auditing for distributed systems},
@@ -82,6 +118,14 @@
     doi     = {10.3389/fcomp.2022.1020946}
 }
 
+% Явно проговорено, что в k8s нет встроенных механизмов аутентификации, авторизации, управления доступом и шифрования трафика.
+% Статья про очередной форк сбера, на этот раз фокрнули Istio.
+% Большое количество практических примеров по конфигурации Istio. Описаны разные ресурсы и их применение.
+% Разбор mTLS и JWT аутентификации.
+% При описании JWT аутентификации появляется IdP.
+% Текст как будто не проверяли. Автор с одной темы перескакивает на другую (в разделе аутентификации).
+% Дублируются предложения. Видны признаки использования LLM для написания статьи.
+% Описываются политики авторизации Istio.
 @Online{PlatformV2025,
     title   = {Как мы строили безопасную микросервисную архитектуру с Service Mesh: взгляд изнутри},
     author  = {PlatformV Sber Blog},
@@ -89,6 +133,11 @@
     urldate = {2025-10-25}
 }
 
+% Большое ислдеование с трендамми микровсервисной архитекутуры.
+% Много ссылочк на другие исследования.
+% Безопасность – топ 1 статей, посвященных сложностям микросервисной архитектуры.
+% Приведено 13 источников, затрагивающих безопасноть, может быть полезно.
+% Источники записаны как secondary studies (SS14, SS15, SS16, SS18, SS23, SS27, SS28, SS29, SS33, SS34, SS35, SS36, SS42)
 @Article{Stojanov2024,
     author  = {Stojanov, Zeljko and Hristoski, Ilija and Stojanov, Jelena and Stojkov, Aleksandra},
     title   = {Research Trends and Recommendations for Future Microservices Research},
@@ -98,4 +147,83 @@
     pages   = {105--130},
     year    = {2024},
     doi     = {10.15514/ISPRAS-2024-36(1)-7},
+}
+}
+
+%
+@article{Sousa2025,
+    author = {Sousa, A. and Branco, F. and Reis, A. and Reis, M. J. C. S.},
+    title = {A Container-Native IAM Framework for Secure Green Mobility: A Case Study with Keycloak and Kubernetes},
+    journal = {Information},
+    year = {2025},
+    volume = {16},
+    number = {9},
+    pages = {802},
+    doi = {10.3390/info16090802},
+}
+
+%
+@article{Matias2023,
+    author = {Ferreira, D. M. and Matias, M. J.},
+    title = {Enhancing Effectiveness and Security in Microservices Architecture},
+    journal = {Procedia Computer Science},
+    year = {2023},
+    volume = {239},
+    pages = {2260--2269},
+    doi = {10.1016/j.procs.2024.06.417},
+}
+
+%
+@techreport{Madupati2023,
+    author = {Madupati, B.},
+    title = {Observability in Microservices Architectures: Leveraging Logging, Metrics, and Distributed Tracing in Large-Scale Systems},
+    institution = {SSRN (Elsevier)},
+    year = {2023},
+    doi = {10.5281/zenodo.13951033},
+}
+
+%
+@article{Belovodov2023,
+    author = {Беловодов, А. В. and Лапонина, О. Р.},
+    title = {Использование управления доступом на основе атрибутов в протоколе OAuth 2.0},
+    journal = {International Journal of Open Information Technologies},
+    year = {2023},
+    number = {10 (63)},
+    pages = {204--214},
+}
+
+%
+@inproceedings{Amir2021,
+    author = {Amir-Mohammadian, S. and Zowj, A. Y.},
+    title = {Towards Concurrent Audit Logging in Microservices},
+    booktitle = {Proceedings of the 2021 IEEE 45th Annual Computers, Software, and Applications Conference (COMPSAC)},
+    year = {2021},
+    pages = {1357--1361},
+    doi = {10.1109/COMPSAC51774.2021.00191},
+}
+
+% Руководство NIST по архитектуре Zero Trust в микросервисах
+% Полезно для формализации принципов AAA и сетевой изоляции.
+% Хорошо подходит для теоретической части и описания требований безопасности.
+@TechReport{NIST2023,
+    author      = {O'Reilly, K.},
+    title       = {Implementing Zero Trust Architecture for Microservices},
+    institution = {National Institute of Standards and Technology (NIST)},
+    year        = {2023},
+    number      = {SP 1800-15},
+    url         = {https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.1800-35.pdf},
+}
+
+% Статья про паттерны и проблемы Kubernetes RBAC.
+% Полезна для части про авторизацию сервисов, роли и ошибки конфигурации.
+% Человеческое замечание: хороший обзор ограничений встроенного RBAC.
+@Article{Arun2025,
+    author  = {Arun Kumar Akuthota},
+    title   = {Role-Based Access Control (RBAC) in Modern Cloud Security Governance: An In-depth Analysis},
+    journal = {International Journal of Scientific Research in Computer Science, Engineering and Information Technology},
+    year    = {2025},
+    volume  = {11},
+    number  = {2},
+    pages   = {3297--3311},
+    doi     = {10.32628/CSEIT25112793},
 }
