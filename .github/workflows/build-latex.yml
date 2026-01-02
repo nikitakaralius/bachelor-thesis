@@ -66,12 +66,8 @@ jobs:
               grep -v '^[[:punct:][:digit:]]*$' > /tmp/clean_text.txt || true
 
             if [ -s /tmp/clean_text.txt ]; then
-              # Check with both dictionaries
-              hunspell -d ru_RU -l -p /tmp/custom_dict.txt /tmp/clean_text.txt 2>/dev/null | sort -u > /tmp/not_ru.txt
-              hunspell -d en_US -l -p /tmp/custom_dict.txt /tmp/clean_text.txt 2>/dev/null | sort -u > /tmp/not_en.txt
-
-              # Find words that fail BOTH dictionaries
-              comm -12 /tmp/not_ru.txt /tmp/not_en.txt > /tmp/errors.txt
+              # Check with both Russian and English dictionaries (ru_RU first, then en_US)
+              hunspell -d ru_RU,en_US -l -p /tmp/custom_dict.txt /tmp/clean_text.txt 2>/dev/null | sort -u > /tmp/errors.txt
 
               if [ -s /tmp/errors.txt ]; then
                 ERROR_COUNT=$(wc -l < /tmp/errors.txt)
@@ -85,7 +81,7 @@ jobs:
                   fi
                   echo '```' >> spellcheck_report.md
                   echo "" >> spellcheck_report.md
-                  echo "> ⚠️ Words not found in Russian OR English dictionaries. Could be typos or technical terms." >> spellcheck_report.md
+                  echo "> ⚠️ Words not found in Russian or English dictionaries. Could be typos or technical terms." >> spellcheck_report.md
                   echo "> Add terms to \`.spellcheckignore\` in the project root" >> spellcheck_report.md
                 else
                   echo "✅ No spelling issues found!" >> spellcheck_report.md
