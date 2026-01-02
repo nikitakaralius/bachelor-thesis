@@ -72,8 +72,6 @@ jobs:
               '',
               `📥 **[Download thesis.pdf](${artifactUrl})** (${fileSizeMB} MB)`,
               '',
-              `Commit: \`${commitSha}\` • Branch: \`${branch}\``,
-              '',
               '_Auto-updated on each commit_'
             ];
             const commentBody = parts.join('\n');
