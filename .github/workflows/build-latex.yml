@@ -127,7 +127,7 @@ jobs:
             const parts = [
               '## 📄 PDF Preview',
               '',
-              `📥 **[View thesis.pdf in browser](${pdfUrl})** (${fileSizeMB} MB)`,
+              `📥 **[Download thesis.pdf](${pdfUrl})** (${fileSizeMB} MB)`,
               '',
               `_Commit: \`${commitSha}\` | Branch: \`${branch}\`_`,
               '',
