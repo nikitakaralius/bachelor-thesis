@@ -146,58 +146,22 @@ jobs:
 
           cat spellcheck_en_report.md
 
-      - name: Combine Reports
-        if: always()
-        run: |
-          cat > combined_report.md <<'REPORT_START'
-          # 📋 LaTeX Quality Check Report
-
-          This automated check helps maintain code quality and catch potential issues early.
-
-          ---
-
-          REPORT_START
-
-          if [ -f chktex_report.md ]; then
-            cat chktex_report.md >> combined_report.md
-            echo "" >> combined_report.md
-            echo "---" >> combined_report.md
-            echo "" >> combined_report.md
-          fi
-
-          if [ -f spellcheck_ru_report.md ]; then
-            cat spellcheck_ru_report.md >> combined_report.md
-            echo "" >> combined_report.md
-            echo "---" >> combined_report.md
-            echo "" >> combined_report.md
-          fi
-
-          if [ -f spellcheck_en_report.md ]; then
-            cat spellcheck_en_report.md >> combined_report.md
-            echo "" >> combined_report.md
-          fi
-
-          cat >> combined_report.md <<'REPORT_END'
-
-          ---
-
-          💡 **Tips:**
-          - Add technical terms to `.github/custom_dict.txt` (Russian) or `.github/custom_dict_en.txt` (English)
-          - Some LaTeX commands may trigger false positives in spell checking
-          - ChkTeX warnings are suggestions, not errors - use your judgment
-
-          REPORT_END
-
-          cat combined_report.md
-
-      - name: Post PR Comment
+      - name: Post ChkTeX Comment
         if: always()
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
-            const report = fs.readFileSync('combined_report.md', 'utf8');
+            let chktexReport = '';
+
+            if (fs.existsSync('chktex_report.md')) {
+              chktexReport = fs.readFileSync('chktex_report.md', 'utf8');
+            } else {
+              chktexReport = '## ChkTeX Results\\n\\n✅ No LaTeX linting issues found!';
+            }
+
+            const commentBody = '# 🔍 LaTeX Code Quality Check\\n\\n' + chktexReport + '\\n\\n---\\n\\n💡 **Tip:** ChkTeX warnings are suggestions, not errors - use your judgment. You can configure rules in `.chktexrc` if needed.';
 
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
@@ -207,7 +171,7 @@ jobs:
 
             const botComment = comments.find(comment =>
               comment.user.type === 'Bot' &&
-              comment.body.includes('📋 LaTeX Quality Check Report')
+              comment.body.includes('🔍 LaTeX Code Quality Check')
             );
 
             if (botComment) {
@@ -215,13 +179,64 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 comment_id: botComment.id,
-                body: report
+                body: commentBody
               });
             } else {
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: context.issue.number,
-                body: report
+                body: commentBody
+              });
+            }
+
+      - name: Post Spell Check Comment
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            let spellcheckRu = '';
+            let spellcheckEn = '';
+
+            if (fs.existsSync('spellcheck_ru_report.md')) {
+              spellcheckRu = fs.readFileSync('spellcheck_ru_report.md', 'utf8');
+            } else {
+              spellcheckRu = '## Spell Check Results (Russian)\\n\\n✅ No Russian spelling issues found!';
+            }
+
+            if (fs.existsSync('spellcheck_en_report.md')) {
+              spellcheckEn = fs.readFileSync('spellcheck_en_report.md', 'utf8');
+            } else {
+              spellcheckEn = '## Spell Check Results (English)\\n\\n✅ No English spelling issues found!';
+            }
+
+            const commentBody = '# 📝 Spell Check Report\\n\\n' + spellcheckRu + '\\n\\n---\\n\\n' + spellcheckEn + '\\n\\n---\\n\\n💡 **Tips:**\\n- Add technical terms to `.github/custom_dict.txt` (Russian) or `.github/custom_dict_en.txt` (English)\\n- Some LaTeX commands may trigger false positives in spell checking\\n- Review the suggestions carefully - not all are actual errors';
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('📝 Spell Check Report')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: commentBody
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: commentBody
               });
             }
