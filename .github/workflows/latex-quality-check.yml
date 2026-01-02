@@ -59,17 +59,11 @@ jobs:
           echo "## Spell Check Results" > spellcheck_report.md
           echo "" >> spellcheck_report.md
 
-          # Prepare custom dictionaries
-          if [ -f ".github/custom_dict.txt" ]; then
-            cp .github/custom_dict.txt custom_dict_ru.txt
+          # Use unified spellcheck ignore file
+          if [ -f ".spellcheckignore" ]; then
+            cp .spellcheckignore custom_dict.txt
           else
-            printf "LaTeX\nPDF\nGitHub\nActions\nworkflow\n" > custom_dict_ru.txt
-          fi
-
-          if [ -f ".github/custom_dict_en.txt" ]; then
-            cp .github/custom_dict_en.txt custom_dict_en.txt
-          else
-            printf "LaTeX\nPDF\nGitHub\nworkflow\n" > custom_dict_en.txt
+            printf "LaTeX\nPDF\nGitHub\nworkflow\n" > custom_dict.txt
           fi
 
           ERRORS_FOUND=0
@@ -80,8 +74,8 @@ jobs:
             sed 's/\\[a-zA-Z]*{//g; s/}//g; s/\\[a-zA-Z]*//g' "$file" > /tmp/clean_text.txt
 
             # Check with both Russian and English dictionaries
-            hunspell -d ru_RU -l -p custom_dict_ru.txt /tmp/clean_text.txt 2>/dev/null | sort | uniq > /tmp/not_russian.txt
-            hunspell -d en_US -l -p custom_dict_en.txt /tmp/clean_text.txt 2>/dev/null | sort | uniq > /tmp/not_english.txt
+            hunspell -d ru_RU -l -p custom_dict.txt /tmp/clean_text.txt 2>/dev/null | sort | uniq > /tmp/not_russian.txt
+            hunspell -d en_US -l -p custom_dict.txt /tmp/clean_text.txt 2>/dev/null | sort | uniq > /tmp/not_english.txt
 
             # Find words that fail BOTH dictionaries (likely actual errors)
             comm -12 /tmp/not_russian.txt /tmp/not_english.txt > /tmp/actual_errors.txt
@@ -105,7 +99,7 @@ jobs:
             echo "✅ No spelling issues found!" >> spellcheck_report.md
           else
             echo "> ⚠️ Проверьте слова выше. Возможно это опечатки или специальные термины." >> spellcheck_report.md
-            echo "> Добавьте технические термины в \`.github/custom_dict.txt\` (русские) или \`.github/custom_dict_en.txt\` (английские)" >> spellcheck_report.md
+            echo "> Добавьте технические термины в \`.spellcheckignore\` в корне проекта" >> spellcheck_report.md
           fi
 
           cat spellcheck_report.md
@@ -190,7 +184,7 @@ jobs:
               'This check compares words against both Russian and English dictionaries. Only words that fail BOTH dictionaries are reported as potential errors. This eliminates false positives from mixed-language documents.',
               '',
               '**Tips:**',
-              '- Add technical terms to `.github/custom_dict.txt` (Russian) or `.github/custom_dict_en.txt` (English)',
+              '- Add technical terms to `.spellcheckignore` in the project root',
               '- Some LaTeX commands may still trigger false positives',
               '- Review the suggestions carefully'
             ];

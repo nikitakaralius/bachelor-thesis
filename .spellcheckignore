@@ -1,11 +1,14 @@
-# Custom Dictionary (Russian)
+# Spellcheck ignore list
 # Add technical terms, proper nouns, and project-specific words here
 # One word per line
 
+Actions
+API
+CI/CD
+GitHub
+JSON
 LaTeX
 PDF
-GitHub
-Actions
-workflow
-CI/CD
 README
+workflow
+YAML
