@@ -31,7 +31,11 @@
     "PDF",
     "README",
     "workflow",
-    "YAML"
+    "YAML",
+    "Makeatletter",
+    "микротипографики",
+    "оркестрацию",
+    "ugost"
   ],
   "ignoreWords": [],
   "useGitignore": true,
