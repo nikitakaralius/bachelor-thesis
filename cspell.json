@@ -31,5 +31,8 @@
   "enableFiletypes": [
     "latex",
     "tex"
-  ]
+  ],
+  "allowCompoundWords": true,
+  "caseSensitive": false,
+  "flagWords": []
 }
