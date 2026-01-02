@@ -122,10 +122,19 @@ jobs:
             if (fs.existsSync('chktex_report.md')) {
               chktexReport = fs.readFileSync('chktex_report.md', 'utf8');
             } else {
-              chktexReport = '## ChkTeX Results\\n\\n✅ No LaTeX linting issues found!';
+              chktexReport = '## ChkTeX Results\n\n✅ No LaTeX linting issues found!';
             }
 
-            const commentBody = '# 🔍 LaTeX Code Quality Check\\n\\n' + chktexReport + '\\n\\n---\\n\\n💡 **Tip:** ChkTeX warnings are suggestions, not errors - use your judgment. You can configure rules in `.chktexrc` if needed.';
+            const parts = [
+              '# 🔍 LaTeX Code Quality Check',
+              '',
+              chktexReport,
+              '',
+              '---',
+              '',
+              '💡 **Tip:** ChkTeX warnings are suggestions, not errors - use your judgment. You can configure rules in `.chktexrc` if needed.'
+            ];
+            const commentBody = parts.join('\n');
 
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
@@ -166,10 +175,26 @@ jobs:
             if (fs.existsSync('spellcheck_report.md')) {
               spellcheckReport = fs.readFileSync('spellcheck_report.md', 'utf8');
             } else {
-              spellcheckReport = '## Spell Check Results\\n\\n✅ No spelling issues found!';
+              spellcheckReport = '## Spell Check Results\n\n✅ No spelling issues found!';
             }
 
-            const commentBody = '# 📝 Spell Check Report (RU + EN)\\n\\n' + spellcheckReport + '\\n\\n---\\n\\n💡 **How it works:**\\n\\nThis check compares words against both Russian and English dictionaries. Only words that fail BOTH dictionaries are reported as potential errors. This eliminates false positives from mixed-language documents.\\n\\n**Tips:**\\n- Add technical terms to `.github/custom_dict.txt` (Russian) or `.github/custom_dict_en.txt` (English)\\n- Some LaTeX commands may still trigger false positives\\n- Review the suggestions carefully';
+            const parts = [
+              '# 📝 Spell Check Report (RU + EN)',
+              '',
+              spellcheckReport,
+              '',
+              '---',
+              '',
+              '💡 **How it works:**',
+              '',
+              'This check compares words against both Russian and English dictionaries. Only words that fail BOTH dictionaries are reported as potential errors. This eliminates false positives from mixed-language documents.',
+              '',
+              '**Tips:**',
+              '- Add technical terms to `.github/custom_dict.txt` (Russian) or `.github/custom_dict_en.txt` (English)',
+              '- Some LaTeX commands may still trigger false positives',
+              '- Review the suggestions carefully'
+            ];
+            const commentBody = parts.join('\n');
 
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
