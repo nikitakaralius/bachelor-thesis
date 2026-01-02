@@ -23,8 +23,6 @@ jobs:
         continue-on-error: true
         run: |
           - pdflatex -output-directory=./build -interaction=nonstopmode thesis.tex
-          - biber --output-directory=./build build/thesis
-          - pdflatex -output-directory=./build -interaction=nonstopmode thesis.tex
           - pdflatex -output-directory=./build -interaction=nonstopmode thesis.tex
 
       - name: Check if PDF was created
