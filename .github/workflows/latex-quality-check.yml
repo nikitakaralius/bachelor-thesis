@@ -1,0 +1,253 @@
+name: LaTeX Quality Check
+
+on:
+  pull_request:
+    branches: [ master, main ]
+    paths:
+      - '**.tex'
+      - '**.bib'
+      - '.github/workflows/latex-quality-check.yml'
+
+jobs:
+  quality-check:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            chktex \
+            hunspell \
+            hunspell-en-us \
+            hunspell-ru \
+            aspell \
+            aspell-en \
+            aspell-ru
+
+          # Download additional Russian dictionaries
+          sudo apt-get install -y hunspell-ru
+
+      - name: LaTeX Linting with ChkTeX
+        id: chktex
+        continue-on-error: true
+        run: |
+          echo "## ChkTeX Results" > chktex_report.md
+          echo "" >> chktex_report.md
+
+          # Find all .tex files and run chktex
+          ERRORS_FOUND=0
+          for file in $(find . -name "*.tex" -not -path "./template_settings/*"); do
+            echo "Checking $file..."
+            if ! chktex -q -v0 "$file" > /tmp/chktex_output.txt 2>&1; then
+              if [ -s /tmp/chktex_output.txt ]; then
+                echo "### 📄 \`$file\`" >> chktex_report.md
+                echo '```' >> chktex_report.md
+                cat /tmp/chktex_output.txt >> chktex_report.md
+                echo '```' >> chktex_report.md
+                echo "" >> chktex_report.md
+                ERRORS_FOUND=1
+              fi
+            fi
+          done
+
+          if [ $ERRORS_FOUND -eq 0 ]; then
+            echo "✅ No LaTeX linting issues found!" >> chktex_report.md
+          fi
+
+          cat chktex_report.md
+
+      - name: Spell Check (Russian)
+        id: spellcheck-ru
+        continue-on-error: true
+        run: |
+          echo "## Spell Check Results (Russian)" > spellcheck_ru_report.md
+          echo "" >> spellcheck_ru_report.md
+
+          # Use custom dictionary if exists, otherwise create default
+          if [ -f ".github/custom_dict.txt" ]; then
+            cp .github/custom_dict.txt custom_dict.txt
+          else
+            cat > custom_dict.txt << 'EOF'
+LaTeX
+PDF
+GitHub
+Actions
+workflow
+EOF
+          fi
+
+          ERRORS_FOUND=0
+          for file in $(find ./chapters -name "*.tex" 2>/dev/null); do
+            echo "Checking Russian spelling in $file..."
+
+            # Extract text from LaTeX (remove commands, but keep text)
+            sed 's/\\[a-zA-Z]*{//g; s/}//g; s/\\[a-zA-Z]*//g' "$file" > /tmp/clean_text.txt
+
+            # Run hunspell
+            if hunspell -d ru_RU -l -p custom_dict.txt /tmp/clean_text.txt > /tmp/misspelled.txt 2>/dev/null; then
+              if [ -s /tmp/misspelled.txt ]; then
+                UNIQUE_ERRORS=$(sort /tmp/misspelled.txt | uniq | head -20)
+                if [ ! -z "$UNIQUE_ERRORS" ]; then
+                  echo "### 📄 \`$file\`" >> spellcheck_ru_report.md
+                  echo "" >> spellcheck_ru_report.md
+                  echo "Возможные орфографические ошибки:" >> spellcheck_ru_report.md
+                  echo '```' >> spellcheck_ru_report.md
+                  echo "$UNIQUE_ERRORS" >> spellcheck_ru_report.md
+                  echo '```' >> spellcheck_ru_report.md
+                  echo "" >> spellcheck_ru_report.md
+                  ERRORS_FOUND=1
+                fi
+              fi
+            fi
+          done
+
+          if [ $ERRORS_FOUND -eq 0 ]; then
+            echo "✅ No Russian spelling issues found!" >> spellcheck_ru_report.md
+          else
+            echo "> ⚠️ Проверьте слова выше. Некоторые могут быть специальными терминами - добавьте их в custom_dict.txt" >> spellcheck_ru_report.md
+          fi
+
+          cat spellcheck_ru_report.md
+
+      - name: Spell Check (English)
+        id: spellcheck-en
+        continue-on-error: true
+        run: |
+          echo "## Spell Check Results (English)" > spellcheck_en_report.md
+          echo "" >> spellcheck_en_report.md
+
+          # Use custom dictionary if exists, otherwise create default
+          if [ -f ".github/custom_dict_en.txt" ]; then
+            cp .github/custom_dict_en.txt custom_dict_en.txt
+          else
+            cat > custom_dict_en.txt << 'EOF'
+LaTeX
+PDF
+GitHub
+workflow
+EOF
+          fi
+
+          ERRORS_FOUND=0
+          for file in $(find ./chapters -name "*.tex" 2>/dev/null); do
+            echo "Checking English spelling in $file..."
+
+            # Extract text from LaTeX
+            sed 's/\\[a-zA-Z]*{//g; s/}//g; s/\\[a-zA-Z]*//g' "$file" > /tmp/clean_text_en.txt
+
+            # Run hunspell for English
+            if hunspell -d en_US -l -p custom_dict_en.txt /tmp/clean_text_en.txt > /tmp/misspelled_en.txt 2>/dev/null; then
+              if [ -s /tmp/misspelled_en.txt ]; then
+                UNIQUE_ERRORS=$(sort /tmp/misspelled_en.txt | uniq | head -20)
+                if [ ! -z "$UNIQUE_ERRORS" ]; then
+                  echo "### 📄 \`$file\`" >> spellcheck_en_report.md
+                  echo "" >> spellcheck_en_report.md
+                  echo "Possible spelling errors:" >> spellcheck_en_report.md
+                  echo '```' >> spellcheck_en_report.md
+                  echo "$UNIQUE_ERRORS" >> spellcheck_en_report.md
+                  echo '```' >> spellcheck_en_report.md
+                  echo "" >> spellcheck_en_report.md
+                  ERRORS_FOUND=1
+                fi
+              fi
+            fi
+          done
+
+          if [ $ERRORS_FOUND -eq 0 ]; then
+            echo "✅ No English spelling issues found!" >> spellcheck_en_report.md
+          else
+            echo "> ⚠️ Check words above. Some may be technical terms - add them to custom_dict_en.txt" >> spellcheck_en_report.md
+          fi
+
+          cat spellcheck_en_report.md
+
+      - name: Combine Reports
+        if: always()
+        run: |
+          cat > combined_report.md << 'EOF'
+# 📋 LaTeX Quality Check Report
+
+This automated check helps maintain code quality and catch potential issues early.
+
+---
+
+EOF
+
+          if [ -f chktex_report.md ]; then
+            cat chktex_report.md >> combined_report.md
+            echo "" >> combined_report.md
+            echo "---" >> combined_report.md
+            echo "" >> combined_report.md
+          fi
+
+          if [ -f spellcheck_ru_report.md ]; then
+            cat spellcheck_ru_report.md >> combined_report.md
+            echo "" >> combined_report.md
+            echo "---" >> combined_report.md
+            echo "" >> combined_report.md
+          fi
+
+          if [ -f spellcheck_en_report.md ]; then
+            cat spellcheck_en_report.md >> combined_report.md
+            echo "" >> combined_report.md
+          fi
+
+          cat >> combined_report.md << 'EOF'
+
+---
+
+💡 **Tips:**
+- Add technical terms to `custom_dict.txt` (Russian) or `custom_dict_en.txt` (English)
+- Some LaTeX commands may trigger false positives in spell checking
+- ChkTeX warnings are suggestions, not errors - use your judgment
+
+EOF
+
+          cat combined_report.md
+
+      - name: Post PR Comment
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('combined_report.md', 'utf8');
+
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('📋 LaTeX Quality Check Report')
+            );
+
+            const commentBody = report;
+
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: commentBody
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: commentBody
+              });
+            }

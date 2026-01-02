@@ -1,0 +1,11 @@
+# Custom Dictionary (Russian)
+# Add technical terms, proper nouns, and project-specific words here
+# One word per line
+
+LaTeX
+PDF
+GitHub
+Actions
+workflow
+CI/CD
+README
