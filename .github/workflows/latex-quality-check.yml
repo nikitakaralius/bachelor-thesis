@@ -22,17 +22,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y \
-            chktex \
-            hunspell \
-            hunspell-en-us \
-            hunspell-ru \
-            aspell \
-            aspell-en \
-            aspell-ru
-
-          # Download additional Russian dictionaries
-          sudo apt-get install -y hunspell-ru
+          sudo apt-get install -y chktex hunspell hunspell-en-us hunspell-ru aspell aspell-en aspell-ru
 
       - name: LaTeX Linting with ChkTeX
         id: chktex
@@ -41,7 +31,6 @@ jobs:
           echo "## ChkTeX Results" > chktex_report.md
           echo "" >> chktex_report.md
 
-          # Find all .tex files and run chktex
           ERRORS_FOUND=0
           for file in $(find . -name "*.tex" -not -path "./template_settings/*"); do
             echo "Checking $file..."
@@ -74,13 +63,7 @@ jobs:
           if [ -f ".github/custom_dict.txt" ]; then
             cp .github/custom_dict.txt custom_dict.txt
           else
-            cat > custom_dict.txt << 'EOF'
-LaTeX
-PDF
-GitHub
-Actions
-workflow
-EOF
+            printf "LaTeX\nPDF\nGitHub\nActions\nworkflow\n" > custom_dict.txt
           fi
 
           ERRORS_FOUND=0
@@ -127,12 +110,7 @@ EOF
           if [ -f ".github/custom_dict_en.txt" ]; then
             cp .github/custom_dict_en.txt custom_dict_en.txt
           else
-            cat > custom_dict_en.txt << 'EOF'
-LaTeX
-PDF
-GitHub
-workflow
-EOF
+            printf "LaTeX\nPDF\nGitHub\nworkflow\n" > custom_dict_en.txt
           fi
 
           ERRORS_FOUND=0
@@ -171,14 +149,14 @@ EOF
       - name: Combine Reports
         if: always()
         run: |
-          cat > combined_report.md << 'EOF'
-# 📋 LaTeX Quality Check Report
+          cat > combined_report.md <<'REPORT_START'
+          # 📋 LaTeX Quality Check Report
 
-This automated check helps maintain code quality and catch potential issues early.
+          This automated check helps maintain code quality and catch potential issues early.
 
----
+          ---
 
-EOF
+          REPORT_START
 
           if [ -f chktex_report.md ]; then
             cat chktex_report.md >> combined_report.md
@@ -199,16 +177,16 @@ EOF
             echo "" >> combined_report.md
           fi
 
-          cat >> combined_report.md << 'EOF'
+          cat >> combined_report.md <<'REPORT_END'
 
----
+          ---
 
-💡 **Tips:**
-- Add technical terms to `custom_dict.txt` (Russian) or `custom_dict_en.txt` (English)
-- Some LaTeX commands may trigger false positives in spell checking
-- ChkTeX warnings are suggestions, not errors - use your judgment
+          💡 **Tips:**
+          - Add technical terms to `.github/custom_dict.txt` (Russian) or `.github/custom_dict_en.txt` (English)
+          - Some LaTeX commands may trigger false positives in spell checking
+          - ChkTeX warnings are suggestions, not errors - use your judgment
 
-EOF
+          REPORT_END
 
           cat combined_report.md
 
@@ -216,11 +194,11 @@ EOF
         if: always()
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
             const report = fs.readFileSync('combined_report.md', 'utf8');
 
-            // Find existing comment
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -232,22 +210,18 @@ EOF
               comment.body.includes('📋 LaTeX Quality Check Report')
             );
 
-            const commentBody = report;
-
             if (botComment) {
-              // Update existing comment
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 comment_id: botComment.id,
-                body: commentBody
+                body: report
               });
             } else {
-              // Create new comment
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: context.issue.number,
-                body: commentBody
+                body: report
               });
             }
