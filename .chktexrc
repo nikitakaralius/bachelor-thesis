@@ -1,0 +1,20 @@
+# ChkTeX configuration file
+# Add rules to suppress specific warnings
+
+# Suppress specific warnings (uncomment to enable)
+# -n1  = Command terminated with space
+# -n8  = Wrong length of dash
+# -n13 = Intersentence spacing should be used
+# -n36 = You should put a space in front of parenthesis
+
+# Example: disable warnings 1 and 8
+# CmdLine { -n1 -n8 }
+
+# Verbose level (0 = quiet, 1 = normal, 2 = verbose)
+VerbosityLevel = 0
+
+# Quote style (use "quotes" or ``quotes'')
+QuoteStyle
+{
+    Formal
+}
