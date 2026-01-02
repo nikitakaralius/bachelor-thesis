@@ -212,7 +212,7 @@ jobs:
               spellcheckEn = '## Spell Check Results (English)\\n\\n✅ No English spelling issues found!';
             }
 
-            const commentBody = '# 📝 Spell Check Report\\n\\n' + spellcheckRu + '\\n\\n---\\n\\n' + spellcheckEn + '\\n\\n---\\n\\n💡 **Tips:**\\n- Add technical terms to `.github/custom_dict.txt` (Russian) or `.github/custom_dict_en.txt` (English)\\n- Some LaTeX commands may trigger false positives in spell checking\\n- Review the suggestions carefully - not all are actual errors';
+            const commentBody = '# 📝 Spell Check Report\\n\\n' + spellcheckRu + '\\n\\n---\\n\\n' + spellcheckEn + '\\n\\n---\\n\\n💡 **Tips:**\\n\\n- Add technical terms to `.github/custom_dict.txt` (Russian) or `.github/custom_dict_en.txt` (English)\\n- Some LaTeX commands may trigger false positives in spell checking\\n- Review the suggestions carefully - not all are actual errors';
 
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
