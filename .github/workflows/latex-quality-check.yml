@@ -143,8 +143,8 @@ jobs:
             echo "" >> spellcheck_report.md
             echo "**Total: $TOTAL_ERRORS spelling errors**" >> spellcheck_report.md
             echo "" >> spellcheck_report.md
-            echo "> 💡 Add technical terms to \`.spellcheckignore\`" >> spellcheck_report.md
-            echo "> 📝 Configure in \`cspell.json\`" >> spellcheck_report.md
+            echo "> 💡 Add custom words to \`words\` array in \`cspell.json\`" >> spellcheck_report.md
+            echo "> 📝 Exclude files via \`.lintignore\`" >> spellcheck_report.md
           fi
 
           cat spellcheck_report.md
@@ -226,10 +226,8 @@ jobs:
               '',
               '💡 **How it works:**',
               '',
-              '- Checks LaTeX files with Russian and English dictionaries (Russian priority)',
-              '- LaTeX commands are ignored automatically',
-              '- Add custom terms to `.spellcheckignore`',
-              '- Configure in `cspell.json`'
+              '- Add custom words to `words` array in `cspell.json`',
+              '- Exclude files via `.lintignore`'
             ];
             const commentBody = parts.join('\n');
 
