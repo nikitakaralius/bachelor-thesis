@@ -14,7 +14,7 @@
 # CmdLine { -n1 -n8 }
 
 # Quote style preferences - use formal quotes
-QuoteStyle { Formal }
+# QuoteStyle { Formal }
 
 # Dash length preferences - allow both -- and ---
-DashExcpt { }
+# DashExcpt { }
