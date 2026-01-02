@@ -37,3 +37,28 @@ jobs:
           name: latex-document
           path: thesis.pdf
           retention-days: 30
+
+      - name: Generate release version
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        id: version
+        run: |
+          VERSION=$(date +'%Y.%m.%d-%H%M%S')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Release version: $VERSION"
+
+      - name: Create Release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: Thesis Document - ${{ steps.version.outputs.version }}
+          body: |
+            Automated build of the thesis document.
+
+            Build date: ${{ steps.version.outputs.version }}
+            Commit: ${{ github.sha }}
+          files: thesis.pdf
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
