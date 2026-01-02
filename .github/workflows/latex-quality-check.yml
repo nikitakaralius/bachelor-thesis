@@ -22,7 +22,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y chktex hunspell hunspell-en-us hunspell-ru aspell aspell-en aspell-ru
+          sudo apt-get install -y chktex hunspell hunspell-en-us hunspell-ru aspell aspell-en aspell-ru texlive-extra-utils
 
       - name: LaTeX Linting with ChkTeX
         id: chktex
@@ -70,8 +70,20 @@ jobs:
           for file in $(find ./chapters -name "*.tex" 2>/dev/null | sort); do
             echo "Checking spelling in $file..."
 
-            # Extract text from LaTeX
-            sed 's/\\[a-zA-Z]*{//g; s/}//g; s/\\[a-zA-Z]*//g' "$file" > /tmp/clean_text.txt
+            # Extract text from LaTeX using detex (proper LaTeX text extraction)
+            # -n = no line numbers, -e = no environments
+            detex -n "$file" 2>/dev/null | \
+              # Remove excessive whitespace and normalize
+              tr -s '[:space:]' '\n' | \
+              # Remove empty lines
+              grep -v '^$' | \
+              # Remove lines with only punctuation or numbers
+              grep -v '^[[:punct:][:digit:]]*$' > /tmp/clean_text.txt || true
+
+            # Skip if no text extracted
+            if [ ! -s /tmp/clean_text.txt ]; then
+              continue
+            fi
 
             # Check with both Russian and English dictionaries
             hunspell -d ru_RU -l -p custom_dict.txt /tmp/clean_text.txt 2>/dev/null | sort | uniq > /tmp/not_russian.txt
