@@ -52,61 +52,20 @@ jobs:
 
           cat chktex_report.md
 
-      - name: Spell Check (Russian)
-        id: spellcheck-ru
+      - name: Spell Check (Combined)
+        id: spellcheck
         continue-on-error: true
         run: |
-          echo "## Spell Check Results (Russian)" > spellcheck_ru_report.md
-          echo "" >> spellcheck_ru_report.md
+          echo "## Spell Check Results" > spellcheck_report.md
+          echo "" >> spellcheck_report.md
 
-          # Use custom dictionary if exists, otherwise create default
+          # Prepare custom dictionaries
           if [ -f ".github/custom_dict.txt" ]; then
-            cp .github/custom_dict.txt custom_dict.txt
+            cp .github/custom_dict.txt custom_dict_ru.txt
           else
-            printf "LaTeX\nPDF\nGitHub\nActions\nworkflow\n" > custom_dict.txt
+            printf "LaTeX\nPDF\nGitHub\nActions\nworkflow\n" > custom_dict_ru.txt
           fi
 
-          ERRORS_FOUND=0
-          for file in $(find ./chapters -name "*.tex" 2>/dev/null); do
-            echo "Checking Russian spelling in $file..."
-
-            # Extract text from LaTeX (remove commands, but keep text)
-            sed 's/\\[a-zA-Z]*{//g; s/}//g; s/\\[a-zA-Z]*//g' "$file" > /tmp/clean_text.txt
-
-            # Run hunspell
-            if hunspell -d ru_RU -l -p custom_dict.txt /tmp/clean_text.txt > /tmp/misspelled.txt 2>/dev/null; then
-              if [ -s /tmp/misspelled.txt ]; then
-                UNIQUE_ERRORS=$(sort /tmp/misspelled.txt | uniq | head -20)
-                if [ ! -z "$UNIQUE_ERRORS" ]; then
-                  echo "### 📄 \`$file\`" >> spellcheck_ru_report.md
-                  echo "" >> spellcheck_ru_report.md
-                  echo "Возможные орфографические ошибки:" >> spellcheck_ru_report.md
-                  echo '```' >> spellcheck_ru_report.md
-                  echo "$UNIQUE_ERRORS" >> spellcheck_ru_report.md
-                  echo '```' >> spellcheck_ru_report.md
-                  echo "" >> spellcheck_ru_report.md
-                  ERRORS_FOUND=1
-                fi
-              fi
-            fi
-          done
-
-          if [ $ERRORS_FOUND -eq 0 ]; then
-            echo "✅ No Russian spelling issues found!" >> spellcheck_ru_report.md
-          else
-            echo "> ⚠️ Проверьте слова выше. Некоторые могут быть специальными терминами - добавьте их в custom_dict.txt" >> spellcheck_ru_report.md
-          fi
-
-          cat spellcheck_ru_report.md
-
-      - name: Spell Check (English)
-        id: spellcheck-en
-        continue-on-error: true
-        run: |
-          echo "## Spell Check Results (English)" > spellcheck_en_report.md
-          echo "" >> spellcheck_en_report.md
-
-          # Use custom dictionary if exists, otherwise create default
           if [ -f ".github/custom_dict_en.txt" ]; then
             cp .github/custom_dict_en.txt custom_dict_en.txt
           else
@@ -115,36 +74,41 @@ jobs:
 
           ERRORS_FOUND=0
           for file in $(find ./chapters -name "*.tex" 2>/dev/null); do
-            echo "Checking English spelling in $file..."
+            echo "Checking spelling in $file..."
 
             # Extract text from LaTeX
-            sed 's/\\[a-zA-Z]*{//g; s/}//g; s/\\[a-zA-Z]*//g' "$file" > /tmp/clean_text_en.txt
+            sed 's/\\[a-zA-Z]*{//g; s/}//g; s/\\[a-zA-Z]*//g' "$file" > /tmp/clean_text.txt
 
-            # Run hunspell for English
-            if hunspell -d en_US -l -p custom_dict_en.txt /tmp/clean_text_en.txt > /tmp/misspelled_en.txt 2>/dev/null; then
-              if [ -s /tmp/misspelled_en.txt ]; then
-                UNIQUE_ERRORS=$(sort /tmp/misspelled_en.txt | uniq | head -20)
-                if [ ! -z "$UNIQUE_ERRORS" ]; then
-                  echo "### 📄 \`$file\`" >> spellcheck_en_report.md
-                  echo "" >> spellcheck_en_report.md
-                  echo "Possible spelling errors:" >> spellcheck_en_report.md
-                  echo '```' >> spellcheck_en_report.md
-                  echo "$UNIQUE_ERRORS" >> spellcheck_en_report.md
-                  echo '```' >> spellcheck_en_report.md
-                  echo "" >> spellcheck_en_report.md
-                  ERRORS_FOUND=1
-                fi
+            # Check with both Russian and English dictionaries
+            hunspell -d ru_RU -l -p custom_dict_ru.txt /tmp/clean_text.txt 2>/dev/null | sort | uniq > /tmp/not_russian.txt
+            hunspell -d en_US -l -p custom_dict_en.txt /tmp/clean_text.txt 2>/dev/null | sort | uniq > /tmp/not_english.txt
+
+            # Find words that fail BOTH dictionaries (likely actual errors)
+            comm -12 /tmp/not_russian.txt /tmp/not_english.txt > /tmp/actual_errors.txt
+
+            if [ -s /tmp/actual_errors.txt ]; then
+              UNIQUE_ERRORS=$(head -20 /tmp/actual_errors.txt)
+              if [ ! -z "$UNIQUE_ERRORS" ]; then
+                echo "### 📄 \`$file\`" >> spellcheck_report.md
+                echo "" >> spellcheck_report.md
+                echo "Слова, не найденные ни в русском, ни в английском словаре:" >> spellcheck_report.md
+                echo '```' >> spellcheck_report.md
+                echo "$UNIQUE_ERRORS" >> spellcheck_report.md
+                echo '```' >> spellcheck_report.md
+                echo "" >> spellcheck_report.md
+                ERRORS_FOUND=1
               fi
             fi
           done
 
           if [ $ERRORS_FOUND -eq 0 ]; then
-            echo "✅ No English spelling issues found!" >> spellcheck_en_report.md
+            echo "✅ No spelling issues found!" >> spellcheck_report.md
           else
-            echo "> ⚠️ Check words above. Some may be technical terms - add them to custom_dict_en.txt" >> spellcheck_en_report.md
+            echo "> ⚠️ Проверьте слова выше. Возможно это опечатки или специальные термины." >> spellcheck_report.md
+            echo "> Добавьте технические термины в \`.github/custom_dict.txt\` (русские) или \`.github/custom_dict_en.txt\` (английские)" >> spellcheck_report.md
           fi
 
-          cat spellcheck_en_report.md
+          cat spellcheck_report.md
 
       - name: Post ChkTeX Comment
         if: always()
@@ -197,22 +161,15 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
-            let spellcheckRu = '';
-            let spellcheckEn = '';
+            let spellcheckReport = '';
 
-            if (fs.existsSync('spellcheck_ru_report.md')) {
-              spellcheckRu = fs.readFileSync('spellcheck_ru_report.md', 'utf8');
+            if (fs.existsSync('spellcheck_report.md')) {
+              spellcheckReport = fs.readFileSync('spellcheck_report.md', 'utf8');
             } else {
-              spellcheckRu = '## Spell Check Results (Russian)\\n\\n✅ No Russian spelling issues found!';
+              spellcheckReport = '## Spell Check Results\\n\\n✅ No spelling issues found!';
             }
 
-            if (fs.existsSync('spellcheck_en_report.md')) {
-              spellcheckEn = fs.readFileSync('spellcheck_en_report.md', 'utf8');
-            } else {
-              spellcheckEn = '## Spell Check Results (English)\\n\\n✅ No English spelling issues found!';
-            }
-
-            const commentBody = '# 📝 Spell Check Report\\n\\n' + spellcheckRu + '\\n\\n---\\n\\n' + spellcheckEn + '\\n\\n---\\n\\n💡 **Tips:**\\n\\n- Add technical terms to `.github/custom_dict.txt` (Russian) or `.github/custom_dict_en.txt` (English)\\n- Some LaTeX commands may trigger false positives in spell checking\\n- Review the suggestions carefully - not all are actual errors';
+            const commentBody = '# 📝 Spell Check Report (RU + EN)\\n\\n' + spellcheckReport + '\\n\\n---\\n\\n💡 **How it works:**\\n\\nThis check compares words against both Russian and English dictionaries. Only words that fail BOTH dictionaries are reported as potential errors. This eliminates false positives from mixed-language documents.\\n\\n**Tips:**\\n- Add technical terms to `.github/custom_dict.txt` (Russian) or `.github/custom_dict_en.txt` (English)\\n- Some LaTeX commands may still trigger false positives\\n- Review the suggestions carefully';
 
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
