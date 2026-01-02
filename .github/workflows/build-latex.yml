@@ -27,11 +27,10 @@ jobs:
 
       - name: Check if PDF was created
         run: |
-          if [ ! -f "build/thesis.pdf" ]; then
+          if [ ! -f "thesis.pdf" ]; then
             echo "PDF file was not created!"
             exit 1
           fi
-          cp build/thesis.pdf thesis.pdf
           ls -la thesis.pdf
 
       - name: Upload PDF as artifact
@@ -41,49 +40,7 @@ jobs:
           path: thesis.pdf
           retention-days: 5
 
-      - name: Prepare GitHub Pages content
-        if: github.event_name == 'pull_request'
-        run: |
-          mkdir -p gh-pages/preview/pr-${{ github.event.pull_request.number }}
-          cp thesis.pdf gh-pages/preview/pr-${{ github.event.pull_request.number }}/thesis.pdf
-
-          # Create .nojekyll to ensure GitHub Pages serves all files
-          touch gh-pages/.nojekyll
-
-          # Create index.html for easier navigation
-          cat > gh-pages/preview/pr-${{ github.event.pull_request.number }}/index.html << 'EOF'
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <meta charset="UTF-8">
-            <title>PDF Preview - PR #${{ github.event.pull_request.number }}</title>
-            <style>
-              body { margin: 0; padding: 20px; font-family: sans-serif; }
-              .header { margin-bottom: 20px; }
-              iframe { width: 100%; height: calc(100vh - 100px); border: none; }
-            </style>
-          </head>
-          <body>
-            <div class="header">
-              <h1>PDF Preview - PR #${{ github.event.pull_request.number }}</h1>
-              <p>Commit: <code>${{ github.sha }}</code></p>
-              <p><a href="thesis.pdf" download>Download PDF</a></p>
-            </div>
-            <iframe src="thesis.pdf"></iframe>
-          </body>
-          </html>
-          EOF
-
-      - name: Deploy to GitHub Pages
-        if: github.event_name == 'pull_request'
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./gh-pages
-          keep_files: true
-          destination_dir: .
-
-      - name: Comment with PDF Preview
+      - name: Upload PDF and create preview comment
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
@@ -93,26 +50,86 @@ jobs:
 
             const commitSha = context.sha.substring(0, 7);
             const branch = context.payload.pull_request.head.ref;
-            const prNumber = context.issue.number;
 
             // Read PDF file
             const stats = fs.statSync('thesis.pdf');
             const fileSizeMB = (stats.size / (1024 * 1024)).toFixed(2);
 
-            // GitHub Pages URL
-            const pdfUrl = `https://${context.repo.owner}.github.io/${context.repo.repo}/preview/pr-${prNumber}/thesis.pdf`;
-            const previewUrl = `https://${context.repo.owner}.github.io/${context.repo.repo}/preview/pr-${prNumber}/`;
+            // Create a temporary draft release to upload the PDF
+            const tagName = `preview-${context.issue.number}-${commitSha}`;
+            let pdfUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            try {
+              // Clean up old preview releases for this PR (keep only the latest)
+              const { data: releases } = await github.rest.repos.listReleases({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                per_page: 100
+              });
+
+              const oldPreviews = releases.filter(r =>
+                r.tag_name.startsWith(`preview-${context.issue.number}-`) &&
+                r.draft === true
+              );
+
+              for (const oldRelease of oldPreviews) {
+                try {
+                  await github.rest.repos.deleteRelease({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    release_id: oldRelease.id
+                  });
+                  // Also delete the tag
+                  await github.rest.git.deleteRef({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    ref: `tags/${oldRelease.tag_name}`
+                  });
+                  console.log(`Deleted old preview release: ${oldRelease.tag_name}`);
+                } catch (e) {
+                  console.log(`Failed to delete old release ${oldRelease.tag_name}:`, e.message);
+                }
+              }
+
+              // Create a draft release
+              const releaseResponse = await github.rest.repos.createRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag_name: tagName,
+                name: `PDF Preview for PR #${context.issue.number}`,
+                body: `Temporary release for PDF preview`,
+                draft: true,
+                prerelease: true
+              });
+
+              // Upload the PDF as a release asset
+              const uploadResponse = await github.rest.repos.uploadReleaseAsset({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: releaseResponse.data.id,
+                name: `thesis-${commitSha}.pdf`,
+                data: fs.readFileSync('thesis.pdf'),
+                headers: {
+                  'content-type': 'application/pdf',
+                  'content-length': stats.size
+                }
+              });
+
+              pdfUrl = uploadResponse.data.browser_download_url;
+              console.log('PDF uploaded successfully:', pdfUrl);
+            } catch (error) {
+              console.log('Failed to upload PDF as release asset:', error.message);
+              console.log('Falling back to artifact URL');
+            }
 
             const parts = [
               '## 📄 PDF Preview',
               '',
               `📥 **[View thesis.pdf in browser](${pdfUrl})** (${fileSizeMB} MB)`,
               '',
-              `🔗 **[Interactive preview page](${previewUrl})**`,
-              '',
               `_Commit: \`${commitSha}\` | Branch: \`${branch}\`_`,
               '',
-              '_Auto-updated on each commit. PDF hosted on GitHub Pages._'
+              '_Auto-updated on each commit_'
             ];
             const commentBody = parts.join('\n');
 
