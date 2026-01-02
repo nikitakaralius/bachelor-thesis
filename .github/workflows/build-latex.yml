@@ -49,55 +49,34 @@ jobs:
             echo "" > thesis_text.txt
           fi
 
-      - name: Setup Node.js for cspell
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install cspell
-        run: npm install -g cspell
-
       - name: Spell Check PDF with cspell
+        uses: streetsidesoftware/cspell-action@v8
         id: spellcheck
         continue-on-error: true
+        with:
+          files: thesis_text.txt
+          config: cspell.json
+          incremental_files_only: false
+          strict: false
+          inline: warning
+          suggestions: true
+
+      - name: Generate spell check report
+        if: always()
         run: |
           echo "## Spell Check Results" > spellcheck_report.md
           echo "" >> spellcheck_report.md
 
           if [ ! -s thesis_text.txt ]; then
             echo "⚠️ Could not extract text from PDF" >> spellcheck_report.md
+          elif [ "${{ steps.spellcheck.outcome }}" == "success" ]; then
+            echo "✅ No spelling issues found!" >> spellcheck_report.md
           else
-            # Run cspell on extracted text
-            if cspell thesis_text.txt --config cspell.json --no-progress --show-suggestions > /tmp/cspell_output.txt 2>&1; then
-              echo "✅ No spelling issues found!" >> spellcheck_report.md
-            else
-              # Parse cspell output
-              if grep -q "Unknown word" /tmp/cspell_output.txt; then
-                # Extract unique unknown words
-                grep "Unknown word" /tmp/cspell_output.txt | \
-                  sed 's/.*Unknown word (\(.*\)).*/\1/' | \
-                  sort -u > /tmp/errors.txt
-
-                ERROR_COUNT=$(wc -l < /tmp/errors.txt)
-                if [ $ERROR_COUNT -gt 0 ]; then
-                  echo "### 📋 Found $ERROR_COUNT potential spelling errors" >> spellcheck_report.md
-                  echo "" >> spellcheck_report.md
-                  echo '```' >> spellcheck_report.md
-                  head -50 /tmp/errors.txt >> spellcheck_report.md
-                  if [ $ERROR_COUNT -gt 50 ]; then
-                    echo "... and $((ERROR_COUNT - 50)) more" >> spellcheck_report.md
-                  fi
-                  echo '```' >> spellcheck_report.md
-                  echo "" >> spellcheck_report.md
-                  echo "> ⚠️ Words not found in dictionaries. Could be typos or technical terms." >> spellcheck_report.md
-                  echo "> Add terms to \`.spellcheckignore\` in the project root" >> spellcheck_report.md
-                else
-                  echo "✅ No spelling issues found!" >> spellcheck_report.md
-                fi
-              else
-                echo "✅ No spelling issues found!" >> spellcheck_report.md
-              fi
-            fi
+            echo "### ⚠️ Spelling issues detected" >> spellcheck_report.md
+            echo "" >> spellcheck_report.md
+            echo "Check the workflow run for detailed suggestions." >> spellcheck_report.md
+            echo "" >> spellcheck_report.md
+            echo "> Add technical terms to \`.spellcheckignore\` in the project root" >> spellcheck_report.md
           fi
 
           cat spellcheck_report.md
