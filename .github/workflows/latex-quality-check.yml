@@ -22,7 +22,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y chktex hunspell hunspell-en-us hunspell-ru texlive-extra-utils
+          sudo apt-get install -y chktex
 
       - name: LaTeX Linting with ChkTeX
         id: chktex
@@ -75,87 +75,6 @@ jobs:
 
           cat chktex_report.md
 
-      - name: Spell Check (RU + EN)
-        id: spellcheck
-        continue-on-error: true
-        run: |
-          echo "## Spell Check Results" > spellcheck_report.md
-          echo "" >> spellcheck_report.md
-
-          # Prepare custom dictionary
-          if [ -f ".spellcheckignore" ]; then
-            cp .spellcheckignore /tmp/custom_dict.txt
-          else
-            printf "LaTeX\nPDF\nGitHub\nworkflow\n" > /tmp/custom_dict.txt
-          fi
-
-          # Function to check if file should be ignored
-          should_ignore() {
-            local file="$1"
-            if [ -f ".lintignore" ]; then
-              while IFS= read -r pattern || [ -n "$pattern" ]; do
-                [[ "$pattern" =~ ^#.*$ ]] && continue
-                [[ -z "$pattern" ]] && continue
-                if [[ "$file" == $pattern ]] || [[ "$file" == *"$pattern"* ]]; then
-                  return 0
-                fi
-              done < ".lintignore"
-            fi
-            return 1
-          }
-
-          ERRORS_FOUND=0
-          for file in $(find ./chapters -name "*.tex" 2>/dev/null | sort); do
-            if should_ignore "$file"; then
-              echo "Skipping $file (in .lintignore)"
-              continue
-            fi
-
-            echo "Checking $file..."
-
-            # Extract clean text using detex
-            detex -n "$file" 2>/dev/null | \
-              tr -s '[:space:]' '\n' | \
-              grep -v '^$' | \
-              grep -v '^[[:punct:][:digit:]]*$' > /tmp/clean_text.txt || true
-
-            if [ ! -s /tmp/clean_text.txt ]; then
-              continue
-            fi
-
-            # Check with both dictionaries
-            hunspell -d ru_RU -l -p /tmp/custom_dict.txt /tmp/clean_text.txt 2>/dev/null | sort -u > /tmp/not_ru.txt
-            hunspell -d en_US -l -p /tmp/custom_dict.txt /tmp/clean_text.txt 2>/dev/null | sort -u > /tmp/not_en.txt
-
-            # Find words that fail BOTH dictionaries
-            comm -12 /tmp/not_ru.txt /tmp/not_en.txt > /tmp/errors.txt
-
-            if [ -s /tmp/errors.txt ]; then
-              ERROR_COUNT=$(wc -l < /tmp/errors.txt)
-              if [ $ERROR_COUNT -gt 0 ]; then
-                echo "### 📄 \`$file\` ($ERROR_COUNT potential errors)" >> spellcheck_report.md
-                echo "" >> spellcheck_report.md
-                echo '```' >> spellcheck_report.md
-                head -30 /tmp/errors.txt >> spellcheck_report.md
-                if [ $ERROR_COUNT -gt 30 ]; then
-                  echo "... and $((ERROR_COUNT - 30)) more" >> spellcheck_report.md
-                fi
-                echo '```' >> spellcheck_report.md
-                echo "" >> spellcheck_report.md
-                ERRORS_FOUND=1
-              fi
-            fi
-          done
-
-          if [ $ERRORS_FOUND -eq 0 ]; then
-            echo "✅ No spelling issues found!" >> spellcheck_report.md
-          else
-            echo "> ⚠️ Words not found in Russian OR English dictionaries. Could be typos or technical terms." >> spellcheck_report.md
-            echo "> Add terms to \`.spellcheckignore\` • Exclude files via \`.lintignore\`" >> spellcheck_report.md
-          fi
-
-          cat spellcheck_report.md
-
       - name: Post ChkTeX Comment
         if: always()
         uses: actions/github-script@v7
@@ -191,66 +110,6 @@ jobs:
             const botComment = comments.find(comment =>
               comment.user.type === 'Bot' &&
               comment.body.includes('🔍 LaTeX Code Quality Check')
-            );
-
-            if (botComment) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: botComment.id,
-                body: commentBody
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body: commentBody
-              });
-            }
-
-      - name: Post Spell Check Comment
-        if: always()
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const fs = require('fs');
-            let spellcheckReport = '';
-
-            if (fs.existsSync('spellcheck_report.md')) {
-              spellcheckReport = fs.readFileSync('spellcheck_report.md', 'utf8');
-            } else {
-              spellcheckReport = '## Spell Check Results\n\n✅ No spelling issues found!';
-            }
-
-            const parts = [
-              '# 📝 Spell Check Report (RU + EN)',
-              '',
-              spellcheckReport,
-              '',
-              '---',
-              '',
-              '💡 **How it works:**',
-              '',
-              'Checks words against both Russian and English dictionaries using hunspell. Only words that fail BOTH are reported.',
-              '',
-              '**Tips:**',
-              '- Add technical terms to `.spellcheckignore` in the project root',
-              '- Uses `detex` to extract only actual text from LaTeX',
-              '- Exclude files via `.lintignore`'
-            ];
-            const commentBody = parts.join('\n');
-
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            });
-
-            const botComment = comments.find(comment =>
-              comment.user.type === 'Bot' &&
-              (comment.body.includes('📝 Spell Check Report') || comment.body.includes('📝 Spell & Grammar Check Report'))
             );
 
             if (botComment) {

@@ -34,6 +34,72 @@ jobs:
           fi
           ls -la thesis.pdf
 
+      - name: Install spell check tools
+        run: |
+          apt-get update
+          apt-get install -y poppler-utils hunspell hunspell-en-us hunspell-ru
+
+      - name: Spell Check PDF (RU + EN)
+        id: spellcheck
+        continue-on-error: true
+        run: |
+          echo "## Spell Check Results" > spellcheck_report.md
+          echo "" >> spellcheck_report.md
+
+          # Prepare custom dictionary
+          if [ -f ".spellcheckignore" ]; then
+            cp .spellcheckignore /tmp/custom_dict.txt
+          else
+            printf "LaTeX\nPDF\nGitHub\nworkflow\n" > /tmp/custom_dict.txt
+          fi
+
+          # Extract text from PDF
+          pdftotext thesis.pdf /tmp/pdf_text.txt 2>/dev/null || true
+
+          if [ ! -s /tmp/pdf_text.txt ]; then
+            echo "⚠️ Could not extract text from PDF" >> spellcheck_report.md
+          else
+            # Clean and prepare text for spell checking
+            cat /tmp/pdf_text.txt | \
+              tr -s '[:space:]' '\n' | \
+              grep -v '^$' | \
+              grep -v '^[[:punct:][:digit:]]*$' > /tmp/clean_text.txt || true
+
+            if [ -s /tmp/clean_text.txt ]; then
+              # Check with both dictionaries
+              hunspell -d ru_RU -l -p /tmp/custom_dict.txt /tmp/clean_text.txt 2>/dev/null | sort -u > /tmp/not_ru.txt
+              hunspell -d en_US -l -p /tmp/custom_dict.txt /tmp/clean_text.txt 2>/dev/null | sort -u > /tmp/not_en.txt
+
+              # Find words that fail BOTH dictionaries
+              comm -12 /tmp/not_ru.txt /tmp/not_en.txt > /tmp/errors.txt
+
+              if [ -s /tmp/errors.txt ]; then
+                ERROR_COUNT=$(wc -l < /tmp/errors.txt)
+                if [ $ERROR_COUNT -gt 0 ]; then
+                  echo "### 📋 Found $ERROR_COUNT potential spelling errors" >> spellcheck_report.md
+                  echo "" >> spellcheck_report.md
+                  echo '```' >> spellcheck_report.md
+                  head -50 /tmp/errors.txt >> spellcheck_report.md
+                  if [ $ERROR_COUNT -gt 50 ]; then
+                    echo "... and $((ERROR_COUNT - 50)) more" >> spellcheck_report.md
+                  fi
+                  echo '```' >> spellcheck_report.md
+                  echo "" >> spellcheck_report.md
+                  echo "> ⚠️ Words not found in Russian OR English dictionaries. Could be typos or technical terms." >> spellcheck_report.md
+                  echo "> Add terms to \`.spellcheckignore\` in the project root" >> spellcheck_report.md
+                else
+                  echo "✅ No spelling issues found!" >> spellcheck_report.md
+                fi
+              else
+                echo "✅ No spelling issues found!" >> spellcheck_report.md
+              fi
+            else
+              echo "⚠️ No text extracted from PDF" >> spellcheck_report.md
+            fi
+          fi
+
+          cat spellcheck_report.md
+
       - name: Upload PDF as artifact
         uses: actions/upload-artifact@v4
         with:
@@ -41,7 +107,7 @@ jobs:
           path: thesis.pdf
           retention-days: 5
 
-      - name: Comment with PDF
+      - name: Comment with PDF and Spell Check
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
@@ -58,10 +124,34 @@ jobs:
             const stats = fs.statSync('thesis.pdf');
             const fileSizeMB = (stats.size / (1024 * 1024)).toFixed(2);
 
+            // Read spell check report
+            let spellcheckReport = '';
+            if (fs.existsSync('spellcheck_report.md')) {
+              spellcheckReport = fs.readFileSync('spellcheck_report.md', 'utf8');
+            } else {
+              spellcheckReport = '## Spell Check Results\n\n✅ No spelling issues found!';
+            }
+
             const parts = [
-              '## 📄 PDF Preview',
+              '# 📄 PDF Preview & Spell Check',
               '',
-              `📥 **[Download thesis.pdf](${artifactUrl})** (${fileSizeMB} MB)`,
+              '## 📥 Download',
+              '',
+              `**[Download thesis.pdf](${artifactUrl})** (${fileSizeMB} MB)`,
+              '',
+              '---',
+              '',
+              spellcheckReport,
+              '',
+              '---',
+              '',
+              '💡 **How spell check works:**',
+              '',
+              'Extracts text from the compiled PDF and checks against both Russian and English dictionaries using hunspell. Only words that fail BOTH are reported.',
+              '',
+              '**Tips:**',
+              '- Add technical terms to `.spellcheckignore` in the project root',
+              '- Checked on the final compiled PDF, not source .tex files',
               '',
               '_Auto-updated on each commit_'
             ];
