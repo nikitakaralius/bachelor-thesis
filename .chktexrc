@@ -1,20 +1,30 @@
 # ChkTeX configuration file
-# Add rules to suppress specific warnings
+# Suppress specific warnings by uncommenting the ones you want to disable
 
-# Suppress specific warnings (uncomment to enable)
-# -n1  = Command terminated with space
-# -n8  = Wrong length of dash
-# -n13 = Intersentence spacing should be used
-# -n36 = You should put a space in front of parenthesis
+# Common warnings to suppress:
+# Warning 1  = Command terminated with space
+# Warning 8  = Wrong length of dash (may be correct)
+# Warning 13 = Intersentence spacing (`\ ') should perhaps be used
+# Warning 36 = You should put a space in front of parenthesis
 
-# Example: disable warnings 1 and 8
+# To suppress warnings, add them to CmdLine
+# Example: CmdLine { -n1 -n8 -n13 }
+
+# Uncomment and customize as needed:
 # CmdLine { -n1 -n8 }
 
-# Verbose level (0 = quiet, 1 = normal, 2 = verbose)
-VerbosityLevel = 0
+# Quiet mode (suppress most output except warnings)
+Quiet
 
-# Quote style (use "quotes" or ``quotes'')
+# Quote style preferences
 QuoteStyle
 {
+    # Use formal quotes
     Formal
+}
+
+# Dash length preferences
+DashExcpt
+{
+    # Allow both -- and ---
 }
