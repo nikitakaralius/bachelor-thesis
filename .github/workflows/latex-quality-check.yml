@@ -22,10 +22,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y chktex default-jre wget
-
-          # Download TeXtidote (LaTeX-aware grammar/spell checker)
-          wget -q https://github.com/sylvainhalle/textidote/releases/download/v0.8.3/textidote.jar -O /tmp/textidote.jar
+          sudo apt-get install -y chktex hunspell hunspell-en-us hunspell-ru texlive-extra-utils
 
       - name: LaTeX Linting with ChkTeX
         id: chktex
@@ -78,18 +75,18 @@ jobs:
 
           cat chktex_report.md
 
-      - name: Spell & Grammar Check (TeXtidote)
+      - name: Spell Check (RU + EN)
         id: spellcheck
         continue-on-error: true
         run: |
-          echo "## Spell & Grammar Check Results" > spellcheck_report.md
+          echo "## Spell Check Results" > spellcheck_report.md
           echo "" >> spellcheck_report.md
 
-          # Create ignore file for TeXtidote if exists
-          DICT_ARGS=""
+          # Prepare custom dictionary
           if [ -f ".spellcheckignore" ]; then
-            # TeXtidote uses --dict for custom dictionary
-            DICT_ARGS="--dict .spellcheckignore"
+            cp .spellcheckignore /tmp/custom_dict.txt
+          else
+            printf "LaTeX\nPDF\nGitHub\nworkflow\n" > /tmp/custom_dict.txt
           fi
 
           # Function to check if file should be ignored
@@ -97,10 +94,8 @@ jobs:
             local file="$1"
             if [ -f ".lintignore" ]; then
               while IFS= read -r pattern || [ -n "$pattern" ]; do
-                # Skip comments and empty lines
                 [[ "$pattern" =~ ^#.*$ ]] && continue
                 [[ -z "$pattern" ]] && continue
-                # Check if file matches pattern
                 if [[ "$file" == $pattern ]] || [[ "$file" == *"$pattern"* ]]; then
                   return 0
                 fi
@@ -111,7 +106,6 @@ jobs:
 
           ERRORS_FOUND=0
           for file in $(find ./chapters -name "*.tex" 2>/dev/null | sort); do
-            # Skip ignored files
             if should_ignore "$file"; then
               echo "Skipping $file (in .lintignore)"
               continue
@@ -119,29 +113,33 @@ jobs:
 
             echo "Checking $file..."
 
-            # Run TeXtidote with mixed language support
-            # --check en = check English (Russian not directly supported by TeXtidote)
-            # --output plain = simple text output
-            java -jar /tmp/textidote.jar \
-              --check en \
-              --firstlang ru \
-              --output plain \
-              $DICT_ARGS \
-              "$file" > /tmp/textidote_output.txt 2>&1 || true
+            # Extract clean text using detex
+            detex -n "$file" 2>/dev/null | \
+              tr -s '[:space:]' '\n' | \
+              grep -v '^$' | \
+              grep -v '^[[:punct:][:digit:]]*$' > /tmp/clean_text.txt || true
 
-            # Check if there are any warnings/errors
-            if grep -q "warnings\|errors" /tmp/textidote_output.txt 2>/dev/null; then
-              # Filter out the summary line and extract actual issues
-              grep -v "^TeXtidote" /tmp/textidote_output.txt | \
-              grep -v "^Found" | \
-              grep -v "^Total" | \
-              grep -v "^$" > /tmp/filtered_output.txt || true
+            if [ ! -s /tmp/clean_text.txt ]; then
+              continue
+            fi
 
-              if [ -s /tmp/filtered_output.txt ]; then
-                echo "### 📄 \`$file\`" >> spellcheck_report.md
+            # Check with both dictionaries
+            hunspell -d ru_RU -l -p /tmp/custom_dict.txt /tmp/clean_text.txt 2>/dev/null | sort -u > /tmp/not_ru.txt
+            hunspell -d en_US -l -p /tmp/custom_dict.txt /tmp/clean_text.txt 2>/dev/null | sort -u > /tmp/not_en.txt
+
+            # Find words that fail BOTH dictionaries
+            comm -12 /tmp/not_ru.txt /tmp/not_en.txt > /tmp/errors.txt
+
+            if [ -s /tmp/errors.txt ]; then
+              ERROR_COUNT=$(wc -l < /tmp/errors.txt)
+              if [ $ERROR_COUNT -gt 0 ]; then
+                echo "### 📄 \`$file\` ($ERROR_COUNT potential errors)" >> spellcheck_report.md
                 echo "" >> spellcheck_report.md
                 echo '```' >> spellcheck_report.md
-                head -30 /tmp/filtered_output.txt >> spellcheck_report.md
+                head -30 /tmp/errors.txt >> spellcheck_report.md
+                if [ $ERROR_COUNT -gt 30 ]; then
+                  echo "... and $((ERROR_COUNT - 30)) more" >> spellcheck_report.md
+                fi
                 echo '```' >> spellcheck_report.md
                 echo "" >> spellcheck_report.md
                 ERRORS_FOUND=1
@@ -150,11 +148,10 @@ jobs:
           done
 
           if [ $ERRORS_FOUND -eq 0 ]; then
-            echo "✅ No spelling or grammar issues found!" >> spellcheck_report.md
+            echo "✅ No spelling issues found!" >> spellcheck_report.md
           else
-            echo "> ⚠️ Review suggestions above. TeXtidote understands LaTeX commands and checks grammar too." >> spellcheck_report.md
-            echo "> Add technical terms to \`.spellcheckignore\` to suppress false positives" >> spellcheck_report.md
-            echo "> Exclude files from checks by adding patterns to \`.lintignore\`" >> spellcheck_report.md
+            echo "> ⚠️ Words not found in Russian OR English dictionaries. Could be typos or technical terms." >> spellcheck_report.md
+            echo "> Add terms to \`.spellcheckignore\` • Exclude files via \`.lintignore\`" >> spellcheck_report.md
           fi
 
           cat spellcheck_report.md
@@ -228,20 +225,20 @@ jobs:
             }
 
             const parts = [
-              '# 📝 Spell & Grammar Check Report',
+              '# 📝 Spell Check Report (RU + EN)',
               '',
               spellcheckReport,
               '',
               '---',
               '',
-              '💡 **Powered by TeXtidote:**',
+              '💡 **How it works:**',
               '',
-              'TeXtidote is a LaTeX-aware spell and grammar checker. It understands LaTeX syntax and only checks actual document text, not commands.',
+              'Checks words against both Russian and English dictionaries using hunspell. Only words that fail BOTH are reported.',
               '',
               '**Tips:**',
               '- Add technical terms to `.spellcheckignore` in the project root',
-              '- TeXtidote also checks grammar, not just spelling',
-              '- Review the suggestions carefully - some may be style preferences'
+              '- Uses `detex` to extract only actual text from LaTeX',
+              '- Exclude files via `.lintignore`'
             ];
             const commentBody = parts.join('\n');
 
@@ -253,7 +250,7 @@ jobs:
 
             const botComment = comments.find(comment =>
               comment.user.type === 'Bot' &&
-              comment.body.includes('📝 Spell Check Report')
+              (comment.body.includes('📝 Spell Check Report') || comment.body.includes('📝 Spell & Grammar Check Report'))
             );
 
             if (botComment) {
