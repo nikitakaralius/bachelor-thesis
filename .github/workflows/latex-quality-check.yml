@@ -117,21 +117,20 @@ jobs:
 
             echo "Checking $file..."
 
-            # Run cspell and capture output
-            if ! cspell "$file" --config cspell.json --no-progress --no-summary 2>&1 | tee /tmp/cspell_output.txt; then
-              # Parse errors from output
-              if grep -q "Unknown word" /tmp/cspell_output.txt; then
-                FILE_ERRORS=$(grep -c "Unknown word" /tmp/cspell_output.txt || true)
-                if [ "$FILE_ERRORS" -gt 0 ]; then
-                  echo "### 📄 \`$file\` ($FILE_ERRORS errors)" >> spellcheck_report.md
-                  echo "" >> spellcheck_report.md
-                  echo '```' >> spellcheck_report.md
-                  grep "Unknown word" /tmp/cspell_output.txt | sed 's/^.*chapters/chapters/' >> spellcheck_report.md
-                  echo '```' >> spellcheck_report.md
-                  echo "" >> spellcheck_report.md
-                  ERRORS_FOUND=1
-                  TOTAL_ERRORS=$((TOTAL_ERRORS + FILE_ERRORS))
-                fi
+            cspell "$file" --config cspell.json --no-progress --no-summary 2>&1 > /tmp/cspell_output.txt || true
+
+            # Parse errors from output
+            if grep -q "Unknown word" /tmp/cspell_output.txt; then
+              FILE_ERRORS=$(grep -c "Unknown word" /tmp/cspell_output.txt || true)
+              if [ "$FILE_ERRORS" -gt 0 ]; then
+                echo "### 📄 \`$file\` ($FILE_ERRORS errors)" >> spellcheck_report.md
+                echo "" >> spellcheck_report.md
+                echo '```' >> spellcheck_report.md
+                grep "Unknown word" /tmp/cspell_output.txt | sed 's/^.*chapters/chapters/' >> spellcheck_report.md
+                echo '```' >> spellcheck_report.md
+                echo "" >> spellcheck_report.md
+                ERRORS_FOUND=1
+                TOTAL_ERRORS=$((TOTAL_ERRORS + FILE_ERRORS))
               fi
             fi
           done
