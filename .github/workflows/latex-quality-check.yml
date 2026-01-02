@@ -124,6 +124,7 @@ jobs:
             # --output plain = simple text output
             java -jar /tmp/textidote.jar \
               --check en \
+              --firstlang ru \
               --output plain \
               $DICT_ARGS \
               "$file" > /tmp/textidote_output.txt 2>&1 || true
