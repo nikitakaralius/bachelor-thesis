@@ -35,18 +35,9 @@ jobs:
           ls -la thesis.pdf
 
       - name: Upload PDF as artifact
-        id: artifact-upload
         uses: actions/upload-artifact@v4
         with:
           name: latex-document
-          path: thesis.pdf
-          retention-days: 30
-
-      - name: Upload PDF as PR asset
-        if: github.event_name == 'pull_request'
-        uses: actions/upload-artifact@v4
-        with:
-          name: pr-pdf-${{ github.event.pull_request.number }}
           path: thesis.pdf
           retention-days: 5
 
