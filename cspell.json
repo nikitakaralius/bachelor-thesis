@@ -2,8 +2,8 @@
   "version": "0.2",
   "language": "ru,en",
   "dictionaries": [
-    "ru_RU",
-    "en_US",
+    "ru_ru",
+    "en_us",
     "latex",
     "custom-words"
   ],
@@ -13,6 +13,10 @@
       "path": "./.spellcheckignore",
       "addWords": true
     }
+  ],
+  "import": [
+    "@cspell/dict-ru_ru/cspell-ext.json",
+    "@cspell/dict-en_us/cspell-ext.json"
   ],
   "ignorePaths": [
     "node_modules",

@@ -80,8 +80,10 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install cspell
-        run: npm install -g cspell
+      - name: Install cspell and dictionaries
+        run: |
+          npm install -g cspell
+          npm install -g @cspell/dict-ru_ru @cspell/dict-en_us
 
       - name: Spell Check LaTeX files with cspell
         id: spellcheck
@@ -226,7 +228,6 @@ jobs:
               '💡 **How it works:**',
               '',
               '- Checks LaTeX files with Russian and English dictionaries (Russian priority)',
-              '- Case-insensitive (КАПС treated same as капс)',
               '- LaTeX commands are ignored automatically',
               '- Add custom terms to `.spellcheckignore`',
               '- Configure in `cspell.json`'
