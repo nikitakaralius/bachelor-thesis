@@ -22,10 +22,10 @@ jobs:
       - name: Build LaTeX document
         continue-on-error: true
         run: |
-          pdflatex -interaction=nonstopmode -output-directory=build thesis.tex
-          biber --input-directory=build --output-directory=build thesis
-          pdflatex -interaction=nonstopmode -output-directory=build thesis.tex
-          pdflatex -interaction=nonstopmode -output-directory=build thesis.tex
+          pdflatex -interaction=nonstopmode thesis.tex
+          biber thesis
+          pdflatex -interaction=nonstopmode thesis.tex
+          pdflatex -interaction=nonstopmode thesis.tex
 
       - name: Check if PDF was created
         run: |
