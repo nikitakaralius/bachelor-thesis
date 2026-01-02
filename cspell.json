@@ -1,0 +1,31 @@
+{
+  "version": "0.2",
+  "language": "en,ru",
+  "dictionaries": [
+    "en_US",
+    "ru_RU",
+    "custom-words"
+  ],
+  "dictionaryDefinitions": [
+    {
+      "name": "custom-words",
+      "path": "./.spellcheckignore",
+      "addWords": true
+    }
+  ],
+  "ignorePaths": [
+    "node_modules",
+    ".git",
+    "*.pdf",
+    "*.aux",
+    "*.log",
+    "*.out",
+    "*.toc"
+  ],
+  "words": [],
+  "ignoreWords": [],
+  "useGitignore": true,
+  "enableFiletypes": [
+    "txt"
+  ]
+}
