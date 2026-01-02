@@ -22,7 +22,10 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y chktex hunspell hunspell-en-us hunspell-ru aspell aspell-en aspell-ru texlive-extra-utils
+          sudo apt-get install -y chktex default-jre wget
+
+          # Download TeXtidote (LaTeX-aware grammar/spell checker)
+          wget -q https://github.com/sylvainhalle/textidote/releases/download/v0.8.3/textidote.jar -O /tmp/textidote.jar
 
       - name: LaTeX Linting with ChkTeX
         id: chktex
@@ -52,54 +55,46 @@ jobs:
 
           cat chktex_report.md
 
-      - name: Spell Check (Combined)
+      - name: Spell & Grammar Check (TeXtidote)
         id: spellcheck
         continue-on-error: true
         run: |
-          echo "## Spell Check Results" > spellcheck_report.md
+          echo "## Spell & Grammar Check Results" > spellcheck_report.md
           echo "" >> spellcheck_report.md
 
-          # Use unified spellcheck ignore file
+          # Create ignore file for TeXtidote if exists
+          DICT_ARGS=""
           if [ -f ".spellcheckignore" ]; then
-            cp .spellcheckignore custom_dict.txt
-          else
-            printf "LaTeX\nPDF\nGitHub\nworkflow\n" > custom_dict.txt
+            # TeXtidote uses --dict for custom dictionary
+            DICT_ARGS="--dict .spellcheckignore"
           fi
 
           ERRORS_FOUND=0
           for file in $(find ./chapters -name "*.tex" 2>/dev/null | sort); do
-            echo "Checking spelling in $file..."
+            echo "Checking $file..."
 
-            # Extract text from LaTeX using detex (proper LaTeX text extraction)
-            # -n = no line numbers, -e = no environments
-            detex -n "$file" 2>/dev/null | \
-              # Remove excessive whitespace and normalize
-              tr -s '[:space:]' '\n' | \
-              # Remove empty lines
-              grep -v '^$' | \
-              # Remove lines with only punctuation or numbers
-              grep -v '^[[:punct:][:digit:]]*$' > /tmp/clean_text.txt || true
+            # Run TeXtidote with mixed language support
+            # --check en,ru = check both English and Russian
+            # --output plain = simple text output
+            java -jar /tmp/textidote.jar \
+              --check en \
+              --output plain \
+              $DICT_ARGS \
+              "$file" > /tmp/textidote_output.txt 2>&1 || true
 
-            # Skip if no text extracted
-            if [ ! -s /tmp/clean_text.txt ]; then
-              continue
-            fi
+            # Check if there are any warnings/errors
+            if grep -q "warnings\|errors" /tmp/textidote_output.txt 2>/dev/null; then
+              # Filter out the summary line and extract actual issues
+              grep -v "^TeXtidote" /tmp/textidote_output.txt | \
+              grep -v "^Found" | \
+              grep -v "^Total" | \
+              grep -v "^$" > /tmp/filtered_output.txt || true
 
-            # Check with both Russian and English dictionaries
-            hunspell -d ru_RU -l -p custom_dict.txt /tmp/clean_text.txt 2>/dev/null | sort | uniq > /tmp/not_russian.txt
-            hunspell -d en_US -l -p custom_dict.txt /tmp/clean_text.txt 2>/dev/null | sort | uniq > /tmp/not_english.txt
-
-            # Find words that fail BOTH dictionaries (likely actual errors)
-            comm -12 /tmp/not_russian.txt /tmp/not_english.txt > /tmp/actual_errors.txt
-
-            if [ -s /tmp/actual_errors.txt ]; then
-              UNIQUE_ERRORS=$(head -20 /tmp/actual_errors.txt)
-              if [ ! -z "$UNIQUE_ERRORS" ]; then
+              if [ -s /tmp/filtered_output.txt ]; then
                 echo "### 📄 \`$file\`" >> spellcheck_report.md
                 echo "" >> spellcheck_report.md
-                echo "Слова, не найденные ни в русском, ни в английском словаре:" >> spellcheck_report.md
                 echo '```' >> spellcheck_report.md
-                echo "$UNIQUE_ERRORS" >> spellcheck_report.md
+                head -30 /tmp/filtered_output.txt >> spellcheck_report.md
                 echo '```' >> spellcheck_report.md
                 echo "" >> spellcheck_report.md
                 ERRORS_FOUND=1
@@ -108,10 +103,10 @@ jobs:
           done
 
           if [ $ERRORS_FOUND -eq 0 ]; then
-            echo "✅ No spelling issues found!" >> spellcheck_report.md
+            echo "✅ No spelling or grammar issues found!" >> spellcheck_report.md
           else
-            echo "> ⚠️ Проверьте слова выше. Возможно это опечатки или специальные термины." >> spellcheck_report.md
-            echo "> Добавьте технические термины в \`.spellcheckignore\` в корне проекта" >> spellcheck_report.md
+            echo "> ⚠️ Review suggestions above. TeXtidote understands LaTeX commands and checks grammar too." >> spellcheck_report.md
+            echo "> Add technical terms to \`.spellcheckignore\` to suppress false positives" >> spellcheck_report.md
           fi
 
           cat spellcheck_report.md
@@ -185,20 +180,20 @@ jobs:
             }
 
             const parts = [
-              '# 📝 Spell Check Report (RU + EN)',
+              '# 📝 Spell & Grammar Check Report',
               '',
               spellcheckReport,
               '',
               '---',
               '',
-              '💡 **How it works:**',
+              '💡 **Powered by TeXtidote:**',
               '',
-              'This check compares words against both Russian and English dictionaries. Only words that fail BOTH dictionaries are reported as potential errors. This eliminates false positives from mixed-language documents.',
+              'TeXtidote is a LaTeX-aware spell and grammar checker. It understands LaTeX syntax and only checks actual document text, not commands.',
               '',
               '**Tips:**',
               '- Add technical terms to `.spellcheckignore` in the project root',
-              '- Some LaTeX commands may still trigger false positives',
-              '- Review the suggestions carefully'
+              '- TeXtidote also checks grammar, not just spelling',
+              '- Review the suggestions carefully - some may be style preferences'
             ];
             const commentBody = parts.join('\n');
 
