@@ -1,9 +1,10 @@
 {
   "version": "0.2",
-  "language": "en,ru",
+  "language": "ru,en",
   "dictionaries": [
-    "en_US",
     "ru_RU",
+    "en_US",
+    "latex",
     "custom-words"
   ],
   "dictionaryDefinitions": [
@@ -20,12 +21,15 @@
     "*.aux",
     "*.log",
     "*.out",
-    "*.toc"
+    "*.toc",
+    "*.bbl",
+    "*.blg"
   ],
   "words": [],
   "ignoreWords": [],
   "useGitignore": true,
   "enableFiletypes": [
-    "txt"
+    "latex",
+    "tex"
   ]
 }

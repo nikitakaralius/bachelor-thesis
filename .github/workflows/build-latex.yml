@@ -34,53 +34,6 @@ jobs:
           fi
           ls -la thesis.pdf
 
-      - name: Install PDF text extraction tools
-        run: |
-          apt-get update
-          apt-get install -y poppler-utils
-
-      - name: Extract text from PDF
-        run: |
-          pdftotext thesis.pdf thesis_text.txt 2>/dev/null || true
-          if [ -s thesis_text.txt ]; then
-            echo "✅ Text extracted from PDF ($(wc -w < thesis_text.txt) words)"
-          else
-            echo "⚠️ Could not extract text from PDF"
-            echo "" > thesis_text.txt
-          fi
-
-      - name: Spell Check PDF with cspell
-        uses: streetsidesoftware/cspell-action@v8
-        id: spellcheck
-        continue-on-error: true
-        with:
-          files: thesis_text.txt
-          config: cspell.json
-          incremental_files_only: false
-          strict: false
-          inline: warning
-          suggestions: true
-
-      - name: Generate spell check report
-        if: always()
-        run: |
-          echo "## Spell Check Results" > spellcheck_report.md
-          echo "" >> spellcheck_report.md
-
-          if [ ! -s thesis_text.txt ]; then
-            echo "⚠️ Could not extract text from PDF" >> spellcheck_report.md
-          elif [ "${{ steps.spellcheck.outcome }}" == "success" ]; then
-            echo "✅ No spelling issues found!" >> spellcheck_report.md
-          else
-            echo "### ⚠️ Spelling issues detected" >> spellcheck_report.md
-            echo "" >> spellcheck_report.md
-            echo "Check the workflow run for detailed suggestions." >> spellcheck_report.md
-            echo "" >> spellcheck_report.md
-            echo "> Add technical terms to \`.spellcheckignore\` in the project root" >> spellcheck_report.md
-          fi
-
-          cat spellcheck_report.md
-
       - name: Upload PDF as artifact
         uses: actions/upload-artifact@v4
         with:
@@ -88,7 +41,7 @@ jobs:
           path: thesis.pdf
           retention-days: 5
 
-      - name: Comment with PDF and Spell Check
+      - name: Comment with PDF Preview
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
@@ -105,35 +58,10 @@ jobs:
             const stats = fs.statSync('thesis.pdf');
             const fileSizeMB = (stats.size / (1024 * 1024)).toFixed(2);
 
-            // Read spell check report
-            let spellcheckReport = '';
-            if (fs.existsSync('spellcheck_report.md')) {
-              spellcheckReport = fs.readFileSync('spellcheck_report.md', 'utf8');
-            } else {
-              spellcheckReport = '## Spell Check Results\n\n✅ No spelling issues found!';
-            }
-
             const parts = [
-              '# 📄 PDF Preview & Spell Check',
+              '## 📄 PDF Preview',
               '',
-              '## 📥 Download',
-              '',
-              `**[Download thesis.pdf](${artifactUrl})** (${fileSizeMB} MB)`,
-              '',
-              '---',
-              '',
-              spellcheckReport,
-              '',
-              '---',
-              '',
-              '💡 **How spell check works:**',
-              '',
-              'Extracts text from the compiled PDF and checks against Russian and English dictionaries using cspell.',
-              '',
-              '**Tips:**',
-              '- Add technical terms to `.spellcheckignore` in the project root',
-              '- Checked on the final compiled PDF, not source .tex files',
-              '- Configure languages and settings in `cspell.json`',
+              `📥 **[Download thesis.pdf](${artifactUrl})** (${fileSizeMB} MB)`,
               '',
               '_Auto-updated on each commit_'
             ];

@@ -75,6 +75,17 @@ jobs:
 
           cat chktex_report.md
 
+      - name: Spell Check LaTeX files with cspell
+        uses: streetsidesoftware/cspell-action@v8
+        id: spellcheck
+        continue-on-error: true
+        with:
+          files: "chapters/**/*.tex"
+          config: cspell.json
+          incremental_files_only: false
+          strict: false
+          inline: warning
+
       - name: Post ChkTeX Comment
         if: always()
         uses: actions/github-script@v7
