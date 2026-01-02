@@ -119,9 +119,6 @@ jobs:
               '',
               '💡 **How it works:**',
               '',
-              '- Checks LaTeX files with Russian and English dictionaries (Russian priority)',
-              '- Case-insensitive (КАПС = капс)',
-              '- LaTeX commands are ignored automatically',
               '- Add custom words to `words` array in `cspell.json`',
               '- Exclude files via `.lintignore`'
             ];
