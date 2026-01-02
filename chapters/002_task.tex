@@ -6,18 +6,18 @@
 
 	\Ministry\\
 	\SPbPU\\
-	\institute
+	\institute{}
 \par}
-}\intervalS% завершает input
+}\intervalS{}% завершает input
 
 				\noindent
 				\begin{minipage}{\linewidth}
 				\vspace{\mfloatsep} % интервал
 				\begin{tabularx}{\linewidth}{Xl}
-					&УТВЕРЖДАЮ      \\
-					&\HeadTitle     \\
-					&\underline{\hspace*{0.1\textheight}} \Head     \\
-					&<<\underline{\hspace*{0.05\textheight}}>> \underline{\hspace*{0.1\textheight}} \approveYear г.  \\
+					&УТВЕРЖДАЮ\\
+					&\HeadTitle{}\\
+					&\underline{\hspace*{0.1\textheight}} \Head{}\\
+					&<<\underline{\hspace*{0.05\textheight}}>> \underline{\hspace*{0.1\textheight}} \approveYear~г.\\
 				\end{tabularx}
 				\vspace{\mfloatsep} % интервал
 				\end{minipage}
@@ -42,11 +42,11 @@
 
 
 \begin{enumerate}[1.]
-	\item Тема работы: {\expandafter \ulined <<\thesisTitle>>.}
+	\item Тема работы: {\expandafter{}\ulined{} <<\thesisTitle>>.}
 	%\item Тема работы (на английском языке): \uline{\thesisTitleEn.} % вероятно после 2021 года
 	\item Срок сдачи студентом законченной работы\footnote{Последний день преддипломной практики согласно учебному плану.}: \uline{\thesisDeadline.}
-	\item Исходные данные по работе\footnote{Текст, который подчёркнут и/или выделен в отдельные элементы нумерационного списка, приведён в качестве примера.}: \uline{статистические данные с сайта \cite{gosstat}, а также из репозитория \cite{uci}; основным источником литературы является монография \cite{Book} и статья \cite{Article}.}% не забываем точку!
-	\printbibliographyTask % печать списка источников % КОММЕНТИРУЕМ ЕСЛИ НЕ ИСПОЛЬЗУЕТСЯ
+	\item Исходные данные по работе\footnote{Текст, который подчёркнут и/или выделен в отдельные элементы нумерационного списка, приведён в качестве примера.}: \uline{статистические данные с~сайта~\cite{gosstat}, а~также из~репозитория~\cite{uci}; основным источником литературы является монография~\cite{Book} и~статья~\cite{Article}.}% не забываем точку!
+	\printbibliographyTask{} % печать списка источников % КОММЕНТИРУЕМ ЕСЛИ НЕ ИСПОЛЬЗУЕТСЯ
 	% В СЛУЧАЕ, ЕСЛИ НЕ ИСПОЛЬЗУЕТСЯ МОЖНО ТАКЖЕ ЗАЙТИ В setup.tex и закомментировать \vspace{-0.28\curtextsize}
 	\item Содержание работы (перечень подлежащих разработке вопросов):
 	\begin{enumerate}[label=\theenumi\arabic*.]
