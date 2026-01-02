@@ -13,9 +13,6 @@
 # Uncomment and customize as needed:
 # CmdLine { -n1 -n8 }
 
-# Quiet mode (suppress most output except warnings)
-Quiet
-
 # Quote style preferences
 QuoteStyle
 {
