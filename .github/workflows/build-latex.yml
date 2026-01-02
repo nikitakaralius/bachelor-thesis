@@ -10,7 +10,6 @@ on:
 jobs:
   build-latex:
     runs-on: ubuntu-latest
-    container: cristiangreco/pdflatex
     permissions:
       contents: write
       pull-requests: write
@@ -18,6 +17,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Install LaTeX
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y texlive-latex-base texlive-latex-extra texlive-fonts-recommended texlive-lang-cyrillic texlive-bibtex-extra biber
 
       - name: Build LaTeX document
         continue-on-error: true
@@ -42,31 +46,41 @@ jobs:
           path: thesis.pdf
           retention-days: 30
 
-      - name: Comment PR with PDF link
+      - name: Upload PDF as PR asset
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-pdf-${{ github.event.pull_request.number }}
+          path: thesis.pdf
+          retention-days: 5
+
+      - name: Comment with PDF
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            const fs = require('fs');
+
+            const commitSha = context.sha.substring(0, 7);
+            const branch = context.payload.pull_request.head.ref;
             const runId = context.runId;
             const artifactUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${runId}`;
 
-            const commentBody = `## 📄 PDF Preview Ready!
+            // Read PDF and convert to base64 for size info
+            const stats = fs.statSync('thesis.pdf');
+            const fileSizeMB = (stats.size / (1024 * 1024)).toFixed(2);
 
-            The LaTeX document has been successfully compiled.
-
-            ### 🔗 Download PDF
-            Click [here to view the workflow run](${artifactUrl}) and download the \`latex-document\` artifact.
-
-            > **Note:** You need to be logged in to GitHub to download artifacts. The artifact will be available for 30 days.
-
-            ### 📊 Build Information
-            - **Commit:** ${context.sha.substring(0, 7)}
-            - **Branch:** ${context.payload.pull_request.head.ref}
-            - **Workflow Run:** [#${runId}](${artifactUrl})
-
-            ---
-            *This comment is automatically updated on each commit.*`;
+            const parts = [
+              '## 📄 PDF Preview',
+              '',
+              `📥 **[Download thesis.pdf](${artifactUrl})** (${fileSizeMB} MB)`,
+              '',
+              `Commit: \`${commitSha}\` • Branch: \`${branch}\``,
+              '',
+              '_Auto-updated on each commit_'
+            ];
+            const commentBody = parts.join('\n');
 
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
@@ -76,7 +90,7 @@ jobs:
 
             const botComment = comments.find(comment =>
               comment.user.type === 'Bot' &&
-              comment.body.includes('📄 PDF Preview Ready!')
+              comment.body.includes('📄 PDF Preview')
             );
 
             if (botComment) {
@@ -86,7 +100,6 @@ jobs:
                 comment_id: botComment.id,
                 body: commentBody
               });
-              console.log('Updated existing comment');
             } else {
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
@@ -94,7 +107,6 @@ jobs:
                 issue_number: context.issue.number,
                 body: commentBody
               });
-              console.log('Created new comment');
             }
 
       - name: Generate release version
