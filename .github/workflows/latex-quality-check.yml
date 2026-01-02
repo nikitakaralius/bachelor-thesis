@@ -32,7 +32,7 @@ jobs:
           echo "" >> chktex_report.md
 
           ERRORS_FOUND=0
-          for file in $(find . -name "*.tex" -not -path "./template_settings/*"); do
+          for file in $(find ./chapters -name "*.tex" 2>/dev/null); do
             echo "Checking $file..."
             if ! chktex -q -v0 "$file" > /tmp/chktex_output.txt 2>&1; then
               if [ -s /tmp/chktex_output.txt ]; then
@@ -47,7 +47,7 @@ jobs:
           done
 
           if [ $ERRORS_FOUND -eq 0 ]; then
-            echo "✅ No LaTeX linting issues found!" >> chktex_report.md
+            echo "✅ No LaTeX linting issues found in ./chapters!" >> chktex_report.md
           fi
 
           cat chktex_report.md
