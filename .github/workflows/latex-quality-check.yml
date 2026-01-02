@@ -1,4 +1,4 @@
-name: LaTeX Quality Check
+name: LaTeX Linting (ChkTeX)
 
 on:
   pull_request:
@@ -6,6 +6,7 @@ on:
     paths:
       - '**.tex'
       - '**.bib'
+      - '.chktexrc'
       - '.github/workflows/latex-quality-check.yml'
 
 jobs:
@@ -75,80 +76,6 @@ jobs:
 
           cat chktex_report.md
 
-      - name: Setup Node.js for cspell
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install cspell and dictionaries
-        run: |
-          npm install -g cspell
-          npm install -g @cspell/dict-ru_ru @cspell/dict-en_us
-
-      - name: Spell Check LaTeX files with cspell
-        id: spellcheck
-        continue-on-error: true
-        run: |
-          echo "## Spell Check Results" > spellcheck_report.md
-          echo "" >> spellcheck_report.md
-
-          # Function to check if file should be ignored
-          should_ignore() {
-            local file="$1"
-            if [ -f ".lintignore" ]; then
-              while IFS= read -r pattern || [ -n "$pattern" ]; do
-                [[ "$pattern" =~ ^#.*$ ]] && continue
-                [[ -z "$pattern" ]] && continue
-                if [[ "$file" == $pattern ]] || [[ "$file" == *"$pattern"* ]]; then
-                  return 0
-                fi
-              done < ".lintignore"
-            fi
-            return 1
-          }
-
-          ERRORS_FOUND=0
-          TOTAL_ERRORS=0
-          for file in $(find ./chapters -name "*.tex" 2>/dev/null | sort); do
-            if should_ignore "$file"; then
-              echo "Skipping $file (in .lintignore)"
-              continue
-            fi
-
-            echo "Checking $file..."
-
-            cspell "$file" --config cspell.json --no-progress --no-summary 2>&1 > /tmp/cspell_output.txt || true
-
-            # Parse errors from output
-            if grep -q "Unknown word" /tmp/cspell_output.txt; then
-              FILE_ERRORS=$(grep -c "Unknown word" /tmp/cspell_output.txt || true)
-              if [ "$FILE_ERRORS" -gt 0 ]; then
-                echo "### 📄 \`$file\` ($FILE_ERRORS errors)" >> spellcheck_report.md
-                echo "" >> spellcheck_report.md
-                echo '```' >> spellcheck_report.md
-                grep "Unknown word" /tmp/cspell_output.txt | sed 's/^.*chapters/chapters/' >> spellcheck_report.md
-                echo '```' >> spellcheck_report.md
-                echo "" >> spellcheck_report.md
-                ERRORS_FOUND=1
-                TOTAL_ERRORS=$((TOTAL_ERRORS + FILE_ERRORS))
-              fi
-            fi
-          done
-
-          if [ $ERRORS_FOUND -eq 0 ]; then
-            echo "✅ No spelling issues found!" >> spellcheck_report.md
-          else
-            echo "" >> spellcheck_report.md
-            echo "---" >> spellcheck_report.md
-            echo "" >> spellcheck_report.md
-            echo "**Total: $TOTAL_ERRORS spelling errors**" >> spellcheck_report.md
-            echo "" >> spellcheck_report.md
-            echo "> 💡 Add custom words to \`words\` array in \`cspell.json\`" >> spellcheck_report.md
-            echo "> 📝 Exclude files via \`.lintignore\`" >> spellcheck_report.md
-          fi
-
-          cat spellcheck_report.md
-
       - name: Post ChkTeX Comment
         if: always()
         uses: actions/github-script@v7
@@ -165,68 +92,16 @@ jobs:
             }
 
             const parts = [
-              '# 🔍 LaTeX Code Quality Check',
+              '# 🔍 LaTeX Linting Report (ChkTeX)',
               '',
               chktexReport,
               '',
               '---',
               '',
-              '💡 **Tip:** ChkTeX warnings are suggestions, not errors - use your judgment. You can configure rules in `.chktexrc` if needed.'
-            ];
-            const commentBody = parts.join('\n');
-
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            });
-
-            const botComment = comments.find(comment =>
-              comment.user.type === 'Bot' &&
-              comment.body.includes('🔍 LaTeX Code Quality Check')
-            );
-
-            if (botComment) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: botComment.id,
-                body: commentBody
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body: commentBody
-              });
-            }
-
-      - name: Post Spell Check Comment
-        if: always()
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const fs = require('fs');
-            let spellcheckReport = '';
-
-            if (fs.existsSync('spellcheck_report.md')) {
-              spellcheckReport = fs.readFileSync('spellcheck_report.md', 'utf8');
-            } else {
-              spellcheckReport = '## Spell Check Results\n\n✅ No spelling issues found!';
-            }
-
-            const parts = [
-              '# 📝 Spell Check Report',
+              '💡 **Tips:**',
               '',
-              spellcheckReport,
-              '',
-              '---',
-              '',
-              '💡 **How it works:**',
-              '',
-              '- Add custom words to `words` array in `cspell.json`',
+              '- ChkTeX warnings are suggestions, not errors - use your judgment',
+              '- Configure rules in `.chktexrc`',
               '- Exclude files via `.lintignore`'
             ];
             const commentBody = parts.join('\n');
@@ -239,7 +114,7 @@ jobs:
 
             const botComment = comments.find(comment =>
               comment.user.type === 'Bot' &&
-              comment.body.includes('📝 Spell Check Report')
+              (comment.body.includes('🔍 LaTeX Linting Report') || comment.body.includes('🔍 LaTeX Code Quality Check'))
             );
 
             if (botComment) {
