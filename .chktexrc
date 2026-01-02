@@ -13,15 +13,8 @@
 # Uncomment and customize as needed:
 # CmdLine { -n1 -n8 }
 
-# Quote style preferences
-QuoteStyle
-{
-    # Use formal quotes
-    Formal
-}
+# Quote style preferences - use formal quotes
+QuoteStyle { Formal }
 
-# Dash length preferences
-DashExcpt
-{
-    # Allow both -- and ---
-}
+# Dash length preferences - allow both -- and ---
+DashExcpt { }
