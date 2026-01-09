@@ -1,6 +1,6 @@
-.PHONY: build
+.PHONY: pdf
 
-build:
+pdf:
 	# First LaTeX run
 	- pdflatex -output-directory=./build -interaction=nonstopmode thesis.tex
 	# Run biber to process bibliography
