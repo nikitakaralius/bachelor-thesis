@@ -35,7 +35,8 @@
     "Makeatletter",
     "микротипографики",
     "оркестрацию",
-    "ugost"
+    "ugost",
+    "категоризацию"
   ],
   "ignoreWords": [],
   "useGitignore": true,
