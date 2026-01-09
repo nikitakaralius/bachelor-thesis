@@ -1,4 +1,4 @@
-.PHONY: pdf
+.PHONY: pdf refs
 
 pdf:
 	# First LaTeX run
@@ -9,3 +9,13 @@ pdf:
 	- pdflatex -output-directory=./build -interaction=nonstopmode thesis.tex
 	# Third LaTeX run to resolve all references
 	- pdflatex -output-directory=./build -interaction=nonstopmode thesis.tex
+
+refs:
+	mkdir -p refs/text
+	@for pdf in refs/pdf/*.pdf; do \
+		if [ -f "$$pdf" ]; then \
+			echo "Converting $$pdf..."; \
+			pdftotext "$$pdf" "refs/text/$$(basename "$$pdf" .pdf).txt"; \
+		fi; \
+	done
+	@echo "PDF extraction complete. Text files are in refs/text/"
