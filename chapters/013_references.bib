@@ -2,14 +2,15 @@
 % Но воду льет хорошо, можно в введении опираться на текст.
 % Отметил про ротацию ключей, но не более. Все-таки важная тема, не стоит про нее забывать.
 % Ссылается на Zimina2023, много ссылок на habr.
+
 @Article{Glumov2024,
-    author  = {Glumov, Konstantin S.},
-    title   = {Безопасность микросервисов: управление секретами и безопасная аутентификация},
+    author = {Glumov, Konstantin S.},
+    title = {Безопасность микросервисов: управление секретами и безопасная аутентификация},
     journal = {Актуальные исследования},
-    year    = {2024},
-    number  = {45 (227)},
-    pages   = {23--29},
-    doi     = {10.5281/zenodo.14029864},
+    year = {2024},
+    number = {45 (227)},
+    pages = {23--29},
+    doi = {10.5281/zenodo.14029864},
 }
 
 % Приходит к использованию mTLS.
@@ -23,29 +24,31 @@
 % Есть упоминание, что закрытый ключ должен храниться где-то в секрете.
 % Есть про Certification Authoriry Server.
 % Фикс на сложности реализации mTLS. Про Service Mesh упоминаний нет. mTLS здесь как бы в ваккууме.
+
 @Article{Zimina2023,
-    author  = {Zimina, K. I. and Laponina, O. R.},
-    title   = {Механизмы межсервисной аутентификации в приложениях с микросервисной архитектурой},
+    author = {Zimina, K. I. and Laponina, O. R.},
+    title = {Механизмы межсервисной аутентификации в приложениях с микросервисной архитектурой},
     journal = {International Journal of Open Information Technologies},
-    volume  = {11},
-    number  = {5},
-    pages   = {146--154},
-    year    = {2023},
-    url     = {https://cyberleninka.ru/article/n/mehanizmy-mezhservisnoy-autentifikatsii-v-prilozheniyah-s-mikroservisnoy-arhitekturoy},
+    volume = {11},
+    number = {5},
+    pages = {146--154},
+    year = {2023},
+    url = {https://cyberleninka.ru/article/n/mehanizmy-mezhservisnoy-autentifikatsii-v-prilozheniyah-s-mikroservisnoy-arhitekturoy},
     urldate = {2025-10-25}
 }
 
 % По сути просто статка механизмов безопасности. oauth 2.0, jwt, sso на первом месте. Есть TLS, но mTLS вообще нет.
 % Логично, что очень много ссылок здесь.
+
 @Article{Almeida2022,
-    author  = {de Almeida, Murilo G. and Canedo, Edna D.},
-    title   = {Authentication and Authorization in Microservices Architecture: A Systematic Literature Review},
+    author = {de Almeida, Murilo G. and Canedo, Edna D.},
+    title = {Authentication and Authorization in Microservices Architecture: A Systematic Literature Review},
     journal = {Applied Sciences},
-    volume  = {12},
-    number  = {6},
-    pages   = {3023},
-    year    = {2022},
-    doi     = {10.3390/app12063023}
+    volume = {12},
+    number = {6},
+    pages = {3023},
+    year = {2022},
+    doi = {10.3390/app12063023}
 }
 
 % Знакомое вступление, но теперь средство решение не M2M auth, а про логирование.
@@ -64,14 +67,15 @@
 % Фильриация и санитизация логов – отвественность агента
 % CorrellationID и хелсчеки агента как лучшие практики.
 % Указаны категории контекстов для включения в логи.
+
 @Article{Barabanov2021,
-    author  = {Barabanov, Alexander I. and Makrushin, Denis},
-    title   = {Security Audit Logging in Microservice-Based Systems: Survey of Architecture Patterns},
+    author = {Barabanov, Alexander I. and Makrushin, Denis},
+    title = {Security Audit Logging in Microservice-Based Systems: Survey of Architecture Patterns},
     journal = {Вопросы кибербезопасности},
-    year    = {2021},
-    number  = {2},
-    pages   = {71--80},
-    doi     = {10.21681/2311-3456-2021-2-71-80}
+    year = {2021},
+    number = {2},
+    pages = {71--80},
+    doi = {10.21681/2311-3456-2021-2-71-80}
 }
 
 % Ссылки плохие – только на документацию инструментов и известные манифесты.
@@ -84,15 +88,16 @@
 % Уделено внимание защите CI/CD.
 % Есть пример конечного сервиса.
 % Статья поверхностно обозревает технологияи, которые нужны для обеспечения безопасности в k8s кластере.
+
 @Article{Sikha2025,
-    author  = {Sikha, Gopinath and Dorai, Venkateshwaran},
-    title   = {End-to-End Security and Operations for Kubernetes-Based Microservices},
+    author = {Sikha, Gopinath and Dorai, Venkateshwaran},
+    title = {End-to-End Security and Operations for Kubernetes-Based Microservices},
     journal = {International Research Journal of Modernization in Engineering Technology and Science},
-    volume  = {7},
-    number  = {8},
-    pages   = {2582--5208},
-    year    = {2025},
-    doi     = {10.56726/IRJMETS82304}
+    volume = {7},
+    number = {8},
+    pages = {2582--5208},
+    year = {2025},
+    doi = {10.56726/IRJMETS82304}
 }
 
 % Во встпуплении упоминается AI для организации безопасности и анализа входящих сигналов.
@@ -108,14 +113,15 @@
 % Дают пояснение, что это хороший индикатор происходящего в системе.
 % На синтетических тестах показали, что могут автоматически обнаружить DDoS атаки.
 % Много ссылок на похожие решения, так что разработанное решение интересно, но не уникально.
+
 @Article{DiPilla2023,
-    author  = {Di Pilla, Piergiuseppe and Pareschi, Remo and Salzano, Francesco and Zappone, Federico},
-    title   = {Listening to what the system tells us: Innovative auditing for distributed systems},
+    author = {Di Pilla, Piergiuseppe and Pareschi, Remo and Salzano, Francesco and Zappone, Federico},
+    title = {Listening to what the system tells us: Innovative auditing for distributed systems},
     journal = {Frontiers in Computer Science},
-    volume  = {4},
-    pages   = {1020946},
-    year    = {2023},
-    doi     = {10.3389/fcomp.2022.1020946}
+    volume = {4},
+    pages = {1020946},
+    year = {2023},
+    doi = {10.3389/fcomp.2022.1020946}
 }
 
 % Явно проговорено, что в k8s нет встроенных механизмов аутентификации, авторизации, управления доступом и шифрования трафика.
@@ -126,10 +132,11 @@
 % Текст как будто не проверяли. Автор с одной темы перескакивает на другую (в разделе аутентификации).
 % Дублируются предложения. Видны признаки использования LLM для написания статьи.
 % Описываются политики авторизации Istio.
+
 @Online{PlatformV2025,
-    title   = {Как мы строили безопасную микросервисную архитектуру с Service Mesh: взгляд изнутри},
-    author  = {PlatformV Sber Blog},
-    url     = {https://platformv.sbertech.ru/blog/kak-my-stroili-bezopasnuyu-mikroservisnuyu-arhitekturu-s-service-mesh-vzglyad-iznutri},
+    title = {Как мы строили безопасную микросервисную архитектуру с Service Mesh: взгляд изнутри},
+    author = {PlatformV Sber Blog},
+    url = {https://platformv.sbertech.ru/blog/kak-my-stroili-bezopasnuyu-mikroservisnuyu-arhitekturu-s-service-mesh-vzglyad-iznutri},
     urldate = {2025-10-25}
 }
 
@@ -138,19 +145,21 @@
 % Безопасность – топ 1 статей, посвященных сложностям микросервисной архитектуры.
 % Приведено 13 источников, затрагивающих безопасноть, может быть полезно.
 % Источники записаны как secondary studies (SS14, SS15, SS16, SS18, SS23, SS27, SS28, SS29, SS33, SS34, SS35, SS36, SS42)
+
 @Article{Stojanov2024,
-    author  = {Stojanov, Zeljko and Hristoski, Ilija and Stojanov, Jelena and Stojkov, Aleksandra},
-    title   = {Research Trends and Recommendations for Future Microservices Research},
+    author = {Stojanov, Zeljko and Hristoski, Ilija and Stojanov, Jelena and Stojkov, Aleksandra},
+    title = {Research Trends and Recommendations for Future Microservices Research},
     journal = {Trudy ISP RAN/Proc. ISP RAS},
-    volume  = {36},
-    number  = {1},
-    pages   = {105--130},
-    year    = {2024},
-    doi     = {10.15514/ISPRAS-2024-36(1)-7},
+    volume = {36},
+    number = {1},
+    pages = {105--130},
+    year = {2024},
+    doi = {10.15514/ISPRAS-2024-36(1)-7},
 }
 }
 
 %
+
 @article{Sousa2025,
     author = {Sousa, A. and Branco, F. and Reis, A. and Reis, M. J. C. S.},
     title = {A Container-Native IAM Framework for Secure Green Mobility: A Case Study with Keycloak and Kubernetes},
@@ -163,6 +172,7 @@
 }
 
 %
+
 @article{Matias2023,
     author = {Ferreira, D. M. and Matias, M. J.},
     title = {Enhancing Effectiveness and Security in Microservices Architecture},
@@ -174,6 +184,7 @@
 }
 
 %
+
 @techreport{Madupati2023,
     author = {Madupati, B.},
     title = {Observability in Microservices Architectures: Leveraging Logging, Metrics, and Distributed Tracing in Large-Scale Systems},
@@ -183,6 +194,7 @@
 }
 
 %
+
 @article{Belovodov2023,
     author = {Беловодов, А. В. and Лапонина, О. Р.},
     title = {Использование управления доступом на основе атрибутов в протоколе OAuth 2.0},
@@ -193,6 +205,7 @@
 }
 
 %
+
 @inproceedings{Amir2021,
     author = {Amir-Mohammadian, S. and Zowj, A. Y.},
     title = {Towards Concurrent Audit Logging in Microservices},
@@ -205,58 +218,60 @@
 % Руководство NIST по архитектуре Zero Trust в микросервисах
 % Полезно для формализации принципов AAA и сетевой изоляции.
 % Хорошо подходит для теоретической части и описания требований безопасности.
+
 @TechReport{NIST2023,
-    author      = {O'Reilly, K.},
-    title       = {Implementing Zero Trust Architecture for Microservices},
+    author = {O'Reilly, K.},
+    title = {Implementing Zero Trust Architecture for Microservices},
     institution = {National Institute of Standards and Technology (NIST)},
-    year        = {2023},
-    number      = {SP 1800-15},
-    url         = {https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.1800-35.pdf},
+    year = {2023},
+    number = {SP 1800-15},
+    url = {https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.1800-35.pdf},
 }
 
 % Статья про паттерны и проблемы Kubernetes RBAC.
 % Полезна для части про авторизацию сервисов, роли и ошибки конфигурации.
 % Человеческое замечание: хороший обзор ограничений встроенного RBAC.
+
 @Article{Arun2025,
-    author  = {Arun Kumar Akuthota},
-    title   = {Role-Based Access Control (RBAC) in Modern Cloud Security Governance: An In-depth Analysis},
+    author = {Arun Kumar Akuthota},
+    title = {Role-Based Access Control (RBAC) in Modern Cloud Security Governance: An In-depth Analysis},
     journal = {International Journal of Scientific Research in Computer Science, Engineering and Information Technology},
-    year    = {2025},
-    volume  = {11},
-    number  = {2},
-    pages   = {3297--3311},
-    doi     = {10.32628/CSEIT25112793},
+    year = {2025},
+    volume = {11},
+    number = {2},
+    pages = {3297--3311},
+    doi = {10.32628/CSEIT25112793},
 }
 
 @Article{Laigner2024,
-    author  = {Laigner, R.},
-    title   = {An Empirical Study on Challenges of Event Management in Microservice Architectures},
+    author = {Laigner, R.},
+    title = {An Empirical Study on Challenges of Event Management in Microservice Architectures},
     journal = {arXiv preprint},
-    year    = {2024},
-    eprint  = {2408.00440},
+    year = {2024},
+    eprint = {2408.00440},
     archivePrefix = {arXiv},
-    primaryClass  = {cs.SE},
-    url     = {https://arxiv.org/abs/2408.00440},
+    primaryClass = {cs.SE},
+    url = {https://arxiv.org/abs/2408.00440},
 }
 
 @Article{Alongi2022,
-    author  = {Alongi, F.},
-    title   = {Event-sourced, observable software architectures: An experience report},
+    author = {Alongi, F.},
+    title = {Event-sourced, observable software architectures: An experience report},
     journal = {Software: Practice and Experience},
-    year    = {2022},
-    volume  = {52},
-    number  = {10},
-    pages   = {2127--2151},
-    doi     = {10.1002/spe.3101},
+    year = {2022},
+    volume = {52},
+    number = {10},
+    pages = {2127--2151},
+    doi = {10.1002/spe.3101},
 }
 
 @Thesis{Alshikh2020,
-    author      = {Alshikh, Hani},
-    title       = {Evaluation and Use of Event-Sourcing for Audit Logging},
+    author = {Alshikh, Hani},
+    title = {Evaluation and Use of Event-Sourcing for Audit Logging},
     institution = {Hamburg University of Applied Sciences (HAW Hamburg)},
-    year        = {2023},
-    type        = {Bachelor's Thesis},
-    url         = {https://reposit.haw-hamburg.de/handle/20.500.12738/16034},
+    year = {2023},
+    type = {Bachelor's Thesis},
+    url = {https://reposit.haw-hamburg.de/handle/20.500.12738/16034},
 }
 
 % https://rtfm.co.ua/ru/istio-obzor-i-zapusk-service-mesh-v-kubernetes/
@@ -264,3 +279,38 @@
 % https://istio.io/
 % https://istio.io/v1.4/docs/concepts/security/
 % https://www.istioworkshop.io/03-servicemesh-overview/istio-architecture/
+
+@Article{Koschel2021,
+    author = {Koschel, Arne and Bertram, Marvin and Bischof, Richard and Schulze, Kevin and Schaaf, Marc and Astrova, Irina},
+    title = {A Look at Service Meshes},
+    booktitle = {Proceedings of the 12th International Conference on Information, Intelligence, Systems \& Applications (IISA)},
+    year = {2021},
+    pages = {1--8},
+    publisher = {IEEE},
+    doi = {10.1109/IISA52424.2021.9555536},
+    urldate = {2026-01-10},
+}
+
+@Article{Hahn2020,
+    author = {Hahn, Dalton A. and Davidson, Drew and Bardas, Alexandru G.},
+    title = {MisMesh: Security Issues and Challenges in Service Meshes},
+    booktitle = {Security and Privacy in Communication Networks (SecureComm 2020), Lecture Notes of the Institute for Computer Sciences, Social Informatics and Telecommunications Engineering, vol. 335},
+    year = {2020},
+    pages = {140--151},
+    publisher = {Springer},
+    doi = {10.1007/978-3-030-63086-7_9},
+    url = {https://arxiv.org/abs/2010.11079},
+    urldate = {2026-01-10},
+}
+
+@Article{Arora2024,
+    author = {Arora, Sunil and Hastings, John},
+    title = {Microsegmented Cloud Network Architecture Using Open-Source Tools for a Zero Trust Foundation},
+    booktitle = {Proceedings of the 17th IEEE International Conference on Security of Information and Networks (SIN 2024)},
+    year = {2024},
+    pages = {1--8},
+    publisher = {IEEE},
+    doi = {10.1109/SIN63213.2024.10871361},
+    url = {https://arxiv.org/abs/2411.12162},
+    urldate = {2026-01-10},
+}
