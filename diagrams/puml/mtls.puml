@@ -1,4 +1,5 @@
 @startuml
+autonumber
 
 participant Client as "Клиент"
 participant Server as "Сервер"
