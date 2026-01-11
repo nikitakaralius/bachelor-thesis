@@ -43,7 +43,8 @@
     "SPIFFE",
     "логируемое",
     "Authentik",
-    "Мультитенантность"
+    "Мультитенантность",
+    "Mimir"
   ],
   "ignoreWords": [],
   "useGitignore": true,
