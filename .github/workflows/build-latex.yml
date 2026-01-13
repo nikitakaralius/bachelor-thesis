@@ -10,7 +10,7 @@ on:
 jobs:
   build-latex:
     runs-on: ubuntu-latest
-    container: cristiangreco/pdflatex
+    container: texlive/texlive:latest
     permissions:
       contents: write
       pull-requests: write
@@ -19,13 +19,42 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Build LaTeX document
-        continue-on-error: true
+      - name: Check LaTeX environment
         run: |
+          echo "=== Checking installed tools ==="
+          pdflatex --version | head -n 1
+          biber --version
+          echo "================================"
+
+      - name: Build LaTeX document
+        run: |
+          set -x  # Enable command echoing for debugging
+
+          echo "=== First pdflatex run ==="
           pdflatex -interaction=nonstopmode thesis.tex
+          echo "First pass completed, exit code: $?"
+
+          echo "=== Running biber ==="
           biber thesis
+          echo "Biber completed, exit code: $?"
+
+          echo "=== Second pdflatex run ==="
           pdflatex -interaction=nonstopmode thesis.tex
+          echo "Second pass completed, exit code: $?"
+
+          echo "=== Third pdflatex run ==="
           pdflatex -interaction=nonstopmode thesis.tex
+          echo "Third pass completed, exit code: $?"
+
+          echo "=== Checking generated files ==="
+          ls -lh thesis.* || true
+
+          if [ -f "thesis.bbl" ]; then
+            echo "Bibliography file created successfully"
+            head -n 20 thesis.bbl
+          else
+            echo "WARNING: Bibliography file not created!"
+          fi
 
       - name: Check if PDF was created
         run: |
