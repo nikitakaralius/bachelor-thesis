@@ -7,4 +7,4 @@
 - [build-latex.yaml](.github/workflows/build-latex.yml) – GitHub workflow, который автотически будет собирать pdf в PR и при мерже в master.
 - В [guides](guides) лежат инструкции (из шаблона + НИР).
 - В [nrw](nrw) – артефакты НИР.
-- В [refs](refs) – pdf источников.
+- В [refs](refs) – pdf источников. 
