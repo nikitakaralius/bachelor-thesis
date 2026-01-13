@@ -31,20 +31,28 @@ jobs:
           set -x  # Enable command echoing for debugging
 
           echo "=== First pdflatex run ==="
-          pdflatex -interaction=nonstopmode thesis.tex
-          echo "First pass completed, exit code: $?"
+          pdflatex -interaction=nonstopmode thesis.tex || true
+          FIRST_EXIT=$?
+          echo "First pass exit code: $FIRST_EXIT"
 
           echo "=== Running biber ==="
           biber thesis
-          echo "Biber completed, exit code: $?"
+          BIBER_EXIT=$?
+          echo "Biber exit code: $BIBER_EXIT"
+
+          if [ $BIBER_EXIT -ne 0 ]; then
+            echo "ERROR: Biber failed with exit code $BIBER_EXIT"
+            echo "This means bibliography processing failed."
+            exit 1
+          fi
 
           echo "=== Second pdflatex run ==="
-          pdflatex -interaction=nonstopmode thesis.tex
-          echo "Second pass completed, exit code: $?"
+          pdflatex -interaction=nonstopmode thesis.tex || true
+          echo "Second pass exit code: $?"
 
           echo "=== Third pdflatex run ==="
-          pdflatex -interaction=nonstopmode thesis.tex
-          echo "Third pass completed, exit code: $?"
+          pdflatex -interaction=nonstopmode thesis.tex || true
+          echo "Third pass exit code: $?"
 
           echo "=== Checking generated files ==="
           ls -lh thesis.* || true
@@ -55,6 +63,13 @@ jobs:
           else
             echo "WARNING: Bibliography file not created!"
           fi
+
+          if [ ! -f "thesis.pdf" ]; then
+            echo "ERROR: Final PDF was not created!"
+            exit 1
+          fi
+
+          echo "=== Build completed successfully ==="
 
       - name: Check if PDF was created
         run: |
